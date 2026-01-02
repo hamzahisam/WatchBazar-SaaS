@@ -1,0 +1,1020 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}List Your Watch - WatchBazaar PK{% endblock %}
+
+{% block extra_css %}
+<style>
+    .listing-header {
+        background: linear-gradient(180deg, rgba(198, 169, 97, 0.1) 0%, rgba(0,0,0,0) 100%);
+        padding: 40px 0;
+    }
+    
+    /* Progress Steps */
+    .step-progress {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 40px;
+    }
+    
+    .step-item {
+        display: flex;
+        align-items: center;
+    }
+    
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #333;
+        color: #888;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .step-item.active .step-circle {
+        background-color: var(--wb-primary);
+        color: #000;
+    }
+    
+    .step-item.completed .step-circle {
+        background-color: #28a745;
+        color: #fff;
+    }
+    
+    .step-label {
+        margin-left: 10px;
+        color: #666;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    .step-item.active .step-label {
+        color: var(--wb-primary);
+    }
+    
+    .step-item.completed .step-label {
+        color: #28a745;
+    }
+    
+    .step-connector {
+        width: 60px;
+        height: 2px;
+        background-color: #333;
+        margin: 0 20px;
+    }
+    
+    .step-connector.completed {
+        background-color: #28a745;
+    }
+    
+    /* Form styling */
+    .form-card {
+        background-color: #1a1a1a;
+        border-radius: 16px;
+        padding: 40px;
+    }
+    
+    .form-section-title {
+        font-size: 1.1rem;
+        color: var(--wb-primary);
+        text-transform: uppercase;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #333;
+    }
+    
+    .form-label {
+        color: #ccc;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+    
+    .form-label .required {
+        color: #dc3545;
+    }
+    
+    .form-control, .form-select {
+        background-color: #2a2a2a;
+        border: 1px solid #444;
+        color: #fff;
+        padding: 12px 16px;
+        border-radius: 8px;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        background-color: #2a2a2a;
+        border-color: var(--wb-primary);
+        color: #fff;
+        box-shadow: 0 0 0 3px rgba(198, 169, 97, 0.2);
+    }
+    
+    .form-control::placeholder {
+        color: #666;
+    }
+    
+    textarea.form-control {
+        min-height: 120px;
+    }
+    
+    /* Image Upload */
+    .image-upload-zone {
+        border: 2px dashed #444;
+        border-radius: 12px;
+        padding: 40px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .image-upload-zone:hover {
+        border-color: var(--wb-primary);
+        background-color: rgba(198, 169, 97, 0.05);
+    }
+    
+    .image-upload-zone.dragover {
+        border-color: var(--wb-primary);
+        background-color: rgba(198, 169, 97, 0.1);
+    }
+    
+    .upload-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: rgba(198, 169, 97, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        color: var(--wb-primary);
+    }
+    
+    .image-preview-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .image-preview {
+        position: relative;
+        aspect-ratio: 1;
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #2a2a2a;
+    }
+    
+    .image-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .image-preview .primary-badge {
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        background-color: var(--wb-primary);
+        color: #000;
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+    
+    .image-preview .remove-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 24px;
+        height: 24px;
+        background-color: rgba(220, 53, 69, 0.9);
+        border: none;
+        border-radius: 50%;
+        color: #fff;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Condition Selector */
+    .condition-options {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .condition-option {
+        flex: 1;
+        min-width: 150px;
+    }
+    
+    .condition-option input {
+        display: none;
+    }
+    
+    .condition-option label {
+        display: block;
+        padding: 15px;
+        background-color: #2a2a2a;
+        border: 2px solid #444;
+        border-radius: 10px;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.3s;
+    }
+    
+    .condition-option input:checked + label {
+        border-color: var(--wb-primary);
+        background-color: rgba(198, 169, 97, 0.1);
+    }
+    
+    .condition-option label strong {
+        display: block;
+        color: #fff;
+        margin-bottom: 5px;
+    }
+    
+    .condition-option label small {
+        color: #888;
+    }
+    
+    /* Negotiation Toggle */
+    .negotiation-toggle {
+        background-color: #2a2a2a;
+        border-radius: 10px;
+        padding: 20px;
+    }
+    
+    .toggle-switch {
+        position: relative;
+        width: 50px;
+        height: 26px;
+    }
+    
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #444;
+        transition: 0.4s;
+        border-radius: 26px;
+    }
+    
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 3px;
+        bottom: 3px;
+        background-color: #fff;
+        transition: 0.4s;
+        border-radius: 50%;
+    }
+    
+    .toggle-switch input:checked + .toggle-slider {
+        background-color: var(--wb-primary);
+    }
+    
+    .toggle-switch input:checked + .toggle-slider:before {
+        transform: translateX(24px);
+    }
+    
+    /* Review Summary */
+    .review-section {
+        background-color: #2a2a2a;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 20px;
+    }
+    
+    .review-section h6 {
+        color: var(--wb-primary);
+        text-transform: uppercase;
+        margin-bottom: 15px;
+    }
+    
+    .review-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #333;
+    }
+    
+    .review-row:last-child {
+        border-bottom: none;
+    }
+    
+    .review-label {
+        color: #888;
+    }
+    
+    .review-value {
+        color: #fff;
+        font-weight: 500;
+    }
+    
+    .review-images {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .review-images img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    
+    /* Navigation buttons */
+    .form-navigation {
+        margin-top: 30px;
+        padding-top: 30px;
+        border-top: 1px solid #333;
+    }
+    
+    @media (max-width: 767px) {
+        .step-label {
+            display: none;
+        }
+        
+        .step-connector {
+            width: 40px;
+            margin: 0 10px;
+        }
+        
+        .form-card {
+            padding: 25px 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="listing-header">
+    <div class="container">
+        <h1 class="display-5 text-center text-light mb-2">List Your Watch</h1>
+        <p class="text-center text-muted mb-5">Share details about your timepiece to reach thousands of watch enthusiasts</p>
+        
+        <!-- Progress Steps -->
+        <div class="step-progress">
+            <div class="step-item active" id="step1-indicator">
+                <div class="step-circle">1</div>
+                <span class="step-label">Basic Info</span>
+            </div>
+            <div class="step-connector" id="connector1"></div>
+            <div class="step-item" id="step2-indicator">
+                <div class="step-circle">2</div>
+                <span class="step-label">Specifications</span>
+            </div>
+            <div class="step-connector" id="connector2"></div>
+            <div class="step-item" id="step3-indicator">
+                <div class="step-circle">3</div>
+                <span class="step-label">Images</span>
+            </div>
+            <div class="step-connector" id="connector3"></div>
+            <div class="step-item" id="step4-indicator">
+                <div class="step-circle">4</div>
+                <span class="step-label">Review</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="pb-6">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <form id="listingForm" action="{% url 'watch_create' %}" method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Step 1: Basic Info -->
+                    <div class="form-card step-content" id="step1">
+                        <h5 class="form-section-title">
+                            <span data-feather="info" style="width:18px;height:18px;"></span> Basic Information
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Brand <span class="required">*</span></label>
+                                <select class="form-select" name="brand" id="brand" required>
+                                    <option value="">Select brand</option>
+                                    <option value="Rolex">Rolex</option>
+                                    <option value="Omega">Omega</option>
+                                    <option value="TAG Heuer">TAG Heuer</option>
+                                    <option value="Cartier">Cartier</option>
+                                    <option value="Patek Philippe">Patek Philippe</option>
+                                    <option value="Audemars Piguet">Audemars Piguet</option>
+                                    <option value="Breitling">Breitling</option>
+                                    <option value="Tudor">Tudor</option>
+                                    <option value="Longines">Longines</option>
+                                    <option value="Seiko">Seiko</option>
+                                    <option value="Citizen">Citizen</option>
+                                    <option value="Casio">Casio</option>
+                                    <option value="Tissot">Tissot</option>
+                                    <option value="Hamilton">Hamilton</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Model <span class="required">*</span></label>
+                                <input type="text" class="form-control" name="model" id="model" 
+                                       placeholder="e.g., Submariner, Speedmaster" required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Reference/Model Number</label>
+                                <input type="text" class="form-control" name="model_number" id="model_number" 
+                                       placeholder="e.g., 126610LN">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Year of Manufacture</label>
+                                <input type="number" class="form-control" name="year" id="year" 
+                                       placeholder="e.g., 2020" min="1900" max="2025">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Category <span class="required">*</span></label>
+                                <select class="form-select" name="category" id="category" required>
+                                    <option value="">Select category</option>
+                                    <option value="Luxury">Luxury</option>
+                                    <option value="Sports">Sports</option>
+                                    <option value="Dress">Dress</option>
+                                    <option value="Dive">Dive</option>
+                                    <option value="Aviation">Aviation</option>
+                                    <option value="Chronograph">Chronograph</option>
+                                    <option value="Smart">Smart Watch</option>
+                                    <option value="Vintage">Vintage</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Gender <span class="required">*</span></label>
+                                <select class="form-select" name="gender" id="gender" required>
+                                    <option value="">Select target audience</option>
+                                    <option value="Men">Men</option>
+                                    <option value="Women">Women</option>
+                                    <option value="Unisex">Unisex</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 mt-4">
+                            <label class="form-label">Condition <span class="required">*</span></label>
+                            <div class="condition-options">
+                                <div class="condition-option">
+                                    <input type="radio" name="condition" id="condition_new" value="Brand New" required>
+                                    <label for="condition_new">
+                                        <strong>Brand New</strong>
+                                        <small>Never worn, with tags</small>
+                                    </label>
+                                </div>
+                                <div class="condition-option">
+                                    <input type="radio" name="condition" id="condition_like_new" value="Like New">
+                                    <label for="condition_like_new">
+                                        <strong>Like New</strong>
+                                        <small>Worn few times, no signs of wear</small>
+                                    </label>
+                                </div>
+                                <div class="condition-option">
+                                    <input type="radio" name="condition" id="condition_excellent" value="Excellent">
+                                    <label for="condition_excellent">
+                                        <strong>Excellent</strong>
+                                        <small>Minor wear, great condition</small>
+                                    </label>
+                                </div>
+                                <div class="condition-option">
+                                    <input type="radio" name="condition" id="condition_good" value="Good">
+                                    <label for="condition_good">
+                                        <strong>Good</strong>
+                                        <small>Visible wear, fully functional</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-navigation d-flex justify-content-end">
+                            <button type="button" class="btn btn-primary" onclick="nextStep(2)">
+                                Continue <span data-feather="arrow-right" style="width:16px;height:16px;"></span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2: Specifications -->
+                    <div class="form-card step-content d-none" id="step2">
+                        <h5 class="form-section-title">
+                            <span data-feather="settings" style="width:18px;height:18px;"></span> Specifications
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Movement Type <span class="required">*</span></label>
+                                <select class="form-select" name="movement_type" id="movement_type" required>
+                                    <option value="">Select movement</option>
+                                    <option value="Automatic">Automatic</option>
+                                    <option value="Quartz">Quartz</option>
+                                    <option value="Manual">Manual Winding</option>
+                                    <option value="Kinetic">Kinetic</option>
+                                    <option value="Solar">Solar</option>
+                                    <option value="Digital">Digital</option>
+                                    <option value="Hybrid">Hybrid</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Case Material</label>
+                                <select class="form-select" name="case_material" id="case_material">
+                                    <option value="">Select material</option>
+                                    <option value="Stainless Steel">Stainless Steel</option>
+                                    <option value="Gold">Gold</option>
+                                    <option value="Rose Gold">Rose Gold</option>
+                                    <option value="White Gold">White Gold</option>
+                                    <option value="Platinum">Platinum</option>
+                                    <option value="Titanium">Titanium</option>
+                                    <option value="Ceramic">Ceramic</option>
+                                    <option value="Carbon">Carbon</option>
+                                    <option value="Two-Tone">Two-Tone</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Band Material</label>
+                                <select class="form-select" name="band_material" id="band_material">
+                                    <option value="">Select material</option>
+                                    <option value="Stainless Steel">Stainless Steel Bracelet</option>
+                                    <option value="Leather">Leather</option>
+                                    <option value="Rubber">Rubber/Silicone</option>
+                                    <option value="NATO">NATO Strap</option>
+                                    <option value="Canvas">Canvas</option>
+                                    <option value="Gold">Gold</option>
+                                    <option value="Two-Tone">Two-Tone</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Case Diameter (mm)</label>
+                                <input type="number" class="form-control" name="case_diameter" id="case_diameter" 
+                                       placeholder="e.g., 40" min="20" max="60">
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Water Resistance</label>
+                                <select class="form-select" name="water_resistance" id="water_resistance">
+                                    <option value="">Select rating</option>
+                                    <option value="Not Water Resistant">Not Water Resistant</option>
+                                    <option value="30m / 3ATM">30m / 3ATM (Splash Resistant)</option>
+                                    <option value="50m / 5ATM">50m / 5ATM (Swimming)</option>
+                                    <option value="100m / 10ATM">100m / 10ATM (Snorkeling)</option>
+                                    <option value="200m / 20ATM">200m / 20ATM (Diving)</option>
+                                    <option value="300m / 30ATM">300m / 30ATM (Professional Diving)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Crystal Type</label>
+                                <select class="form-select" name="crystal_type" id="crystal_type">
+                                    <option value="">Select type</option>
+                                    <option value="Sapphire">Sapphire Crystal</option>
+                                    <option value="Mineral">Mineral Glass</option>
+                                    <option value="Acrylic">Acrylic/Hesalite</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Description <span class="required">*</span></label>
+                            <textarea class="form-control" name="description" id="description" rows="5" 
+                                      placeholder="Provide detailed information about your watch including its history, any service records, included accessories (box, papers), and any notable features..." required></textarea>
+                            <small class="text-muted">Minimum 50 characters</small>
+                        </div>
+                        
+                        <div class="form-navigation d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-light" onclick="prevStep(1)">
+                                <span data-feather="arrow-left" style="width:16px;height:16px;"></span> Back
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="nextStep(3)">
+                                Continue <span data-feather="arrow-right" style="width:16px;height:16px;"></span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3: Images -->
+                    <div class="form-card step-content d-none" id="step3">
+                        <h5 class="form-section-title">
+                            <span data-feather="image" style="width:18px;height:18px;"></span> Watch Images
+                        </h5>
+                        
+                        <p class="text-muted mb-4">Upload high-quality images of your watch. The first image will be the primary listing image.</p>
+                        
+                        <div class="image-upload-zone" id="uploadZone">
+                            <input type="file" id="imageInput" name="images" multiple accept="image/*" class="d-none">
+                            <div class="upload-icon">
+                                <span data-feather="upload" style="width:28px;height:28px;"></span>
+                            </div>
+                            <h6 class="text-light mb-2">Drag & drop images here</h6>
+                            <p class="text-muted mb-0">or click to browse</p>
+                            <p class="text-muted small mt-2">PNG, JPG up to 5MB each. Maximum 10 images.</p>
+                        </div>
+                        
+                        <div class="image-preview-container" id="imagePreviewContainer">
+                            <!-- Preview images will appear here -->
+                        </div>
+                        
+                        <div class="alert alert-info mt-4 border-0" style="background-color:rgba(198,169,97,0.1);">
+                            <p class="mb-2"><strong class="text-primary">Tips for great photos:</strong></p>
+                            <ul class="mb-0 text-muted small">
+                                <li>Use natural lighting or soft artificial light</li>
+                                <li>Show the watch from multiple angles (front, back, side, clasp)</li>
+                                <li>Include close-ups of any imperfections</li>
+                                <li>If you have box and papers, include photos of them</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="form-navigation d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-light" onclick="prevStep(2)">
+                                <span data-feather="arrow-left" style="width:16px;height:16px;"></span> Back
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="nextStep(4)">
+                                Continue <span data-feather="arrow-right" style="width:16px;height:16px;"></span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 4: Review & Pricing -->
+                    <div class="form-card step-content d-none" id="step4">
+                        <h5 class="form-section-title">
+                            <span data-feather="check-circle" style="width:18px;height:18px;"></span> Review & Pricing
+                        </h5>
+                        
+                        <!-- Pricing -->
+                        <div class="mb-4">
+                            <label class="form-label">Asking Price (PKR) <span class="required">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary text-primary">Rs.</span>
+                                <input type="number" class="form-control" name="price" id="price" 
+                                       placeholder="Enter your asking price" min="1000" required>
+                            </div>
+                            <small class="text-muted">Minimum Rs. 1,000</small>
+                        </div>
+                        
+                        <div class="negotiation-toggle d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <strong class="text-light">Allow Negotiations</strong>
+                                <p class="text-muted small mb-0">Let buyers make offers below your asking price</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" name="allow_negotiations" id="allow_negotiations" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div id="minOfferSection">
+                            <label class="form-label">Minimum Acceptable Offer (PKR)</label>
+                            <div class="input-group mb-4">
+                                <span class="input-group-text bg-dark border-secondary text-primary">Rs.</span>
+                                <input type="number" class="form-control" name="min_offer" id="min_offer" 
+                                       placeholder="Lowest offer you'd consider">
+                            </div>
+                        </div>
+                        
+                        <!-- Review Summary -->
+                        <h6 class="text-primary text-uppercase mt-5 mb-3">Listing Summary</h6>
+                        
+                        <div class="review-section">
+                            <h6><span data-feather="watch" style="width:14px;height:14px;"></span> Watch Details</h6>
+                            <div class="review-row">
+                                <span class="review-label">Brand & Model</span>
+                                <span class="review-value" id="reviewBrandModel">—</span>
+                            </div>
+                            <div class="review-row">
+                                <span class="review-label">Condition</span>
+                                <span class="review-value" id="reviewCondition">—</span>
+                            </div>
+                            <div class="review-row">
+                                <span class="review-label">Category</span>
+                                <span class="review-value" id="reviewCategory">—</span>
+                            </div>
+                        </div>
+                        
+                        <div class="review-section">
+                            <h6><span data-feather="settings" style="width:14px;height:14px;"></span> Specifications</h6>
+                            <div class="review-row">
+                                <span class="review-label">Movement</span>
+                                <span class="review-value" id="reviewMovement">—</span>
+                            </div>
+                            <div class="review-row">
+                                <span class="review-label">Case Material</span>
+                                <span class="review-value" id="reviewCase">—</span>
+                            </div>
+                            <div class="review-row">
+                                <span class="review-label">Band Material</span>
+                                <span class="review-value" id="reviewBand">—</span>
+                            </div>
+                        </div>
+                        
+                        <div class="review-section">
+                            <h6><span data-feather="image" style="width:14px;height:14px;"></span> Images</h6>
+                            <div class="review-images" id="reviewImages">
+                                <span class="text-muted">No images uploaded</span>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-warning border-0 mt-4" style="background-color:rgba(255,193,7,0.1);">
+                            <span data-feather="info" style="width:16px;height:16px;color:#ffc107;"></span>
+                            <span class="text-warning">Your listing will be reviewed by our team before going live. This usually takes less than 24 hours.</span>
+                        </div>
+                        
+                        <div class="form-navigation d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-light" onclick="prevStep(3)">
+                                <span data-feather="arrow-left" style="width:16px;height:16px;"></span> Back
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <span data-feather="check" style="width:18px;height:18px;"></span> Submit Listing
+                            </button>
+                        </div>
+                    </div>
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentStep = 1;
+    let uploadedImages = [];
+    
+    // Step navigation
+    function nextStep(step) {
+        if (!validateStep(currentStep)) {
+            return;
+        }
+        
+        showStep(step);
+        
+        if (step === 4) {
+            updateReviewSummary();
+        }
+    }
+    
+    function prevStep(step) {
+        showStep(step);
+    }
+    
+    function showStep(step) {
+        // Hide all steps
+        document.querySelectorAll('.step-content').forEach(el => {
+            el.classList.add('d-none');
+        });
+        
+        // Show target step
+        document.getElementById(`step${step}`).classList.remove('d-none');
+        
+        // Update progress indicators
+        for (let i = 1; i <= 4; i++) {
+            const indicator = document.getElementById(`step${i}-indicator`);
+            const connector = document.getElementById(`connector${i}`);
+            
+            if (i < step) {
+                indicator.classList.remove('active');
+                indicator.classList.add('completed');
+                indicator.querySelector('.step-circle').innerHTML = '<span data-feather="check" style="width:18px;height:18px;"></span>';
+                if (connector) connector.classList.add('completed');
+            } else if (i === step) {
+                indicator.classList.add('active');
+                indicator.classList.remove('completed');
+                indicator.querySelector('.step-circle').textContent = i;
+                if (connector) connector.classList.remove('completed');
+            } else {
+                indicator.classList.remove('active', 'completed');
+                indicator.querySelector('.step-circle').textContent = i;
+                if (connector) connector.classList.remove('completed');
+            }
+        }
+        
+        currentStep = step;
+        feather.replace();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    // Validation
+    function validateStep(step) {
+        const stepElement = document.getElementById(`step${step}`);
+        const requiredFields = stepElement.querySelectorAll('[required]');
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            if (!field.value) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        // Condition radio validation
+        if (step === 1) {
+            const conditionChecked = document.querySelector('input[name="condition"]:checked');
+            if (!conditionChecked) {
+                document.querySelectorAll('.condition-option label').forEach(label => {
+                    label.style.borderColor = '#dc3545';
+                });
+                isValid = false;
+            }
+        }
+        
+        // Images validation
+        if (step === 3 && uploadedImages.length === 0) {
+            document.getElementById('uploadZone').style.borderColor = '#dc3545';
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            alert('Please fill in all required fields');
+        }
+        
+        return isValid;
+    }
+    
+    // Image upload handling
+    const uploadZone = document.getElementById('uploadZone');
+    const imageInput = document.getElementById('imageInput');
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    
+    uploadZone.addEventListener('click', () => imageInput.click());
+    
+    uploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadZone.classList.add('dragover');
+    });
+    
+    uploadZone.addEventListener('dragleave', () => {
+        uploadZone.classList.remove('dragover');
+    });
+    
+    uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+    });
+    
+    imageInput.addEventListener('change', (e) => {
+        handleFiles(e.target.files);
+    });
+    
+    function handleFiles(files) {
+        const maxFiles = 10;
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        
+        for (let file of files) {
+            if (uploadedImages.length >= maxFiles) {
+                alert('Maximum 10 images allowed');
+                break;
+            }
+            
+            if (file.size > maxSize) {
+                alert(`File ${file.name} is too large. Maximum size is 5MB.`);
+                continue;
+            }
+            
+            if (!file.type.startsWith('image/')) {
+                alert(`File ${file.name} is not an image.`);
+                continue;
+            }
+            
+            uploadedImages.push(file);
+            createPreview(file, uploadedImages.length - 1);
+        }
+        
+        uploadZone.style.borderColor = '';
+    }
+    
+    function createPreview(file, index) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const div = document.createElement('div');
+            div.className = 'image-preview';
+            div.dataset.index = index;
+            div.innerHTML = `
+                <img src="${e.target.result}" alt="Preview">
+                ${index === 0 ? '<span class="primary-badge">Primary</span>' : ''}
+                <button type="button" class="remove-btn" onclick="removeImage(${index})">
+                    <span data-feather="x" style="width:14px;height:14px;"></span>
+                </button>
+            `;
+            previewContainer.appendChild(div);
+            feather.replace();
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    function removeImage(index) {
+        uploadedImages.splice(index, 1);
+        renderPreviews();
+    }
+    
+    function renderPreviews() {
+        previewContainer.innerHTML = '';
+        uploadedImages.forEach((file, index) => {
+            createPreview(file, index);
+        });
+    }
+    
+    // Negotiation toggle
+    const negotiationToggle = document.getElementById('allow_negotiations');
+    const minOfferSection = document.getElementById('minOfferSection');
+    
+    negotiationToggle.addEventListener('change', function() {
+        minOfferSection.style.display = this.checked ? 'block' : 'none';
+    });
+    
+    // Update review summary
+    function updateReviewSummary() {
+        const brand = document.getElementById('brand').value;
+        const model = document.getElementById('model').value;
+        const condition = document.querySelector('input[name="condition"]:checked');
+        const category = document.getElementById('category').value;
+        const movement = document.getElementById('movement_type').value;
+        const caseMaterial = document.getElementById('case_material').value;
+        const bandMaterial = document.getElementById('band_material').value;
+        
+        document.getElementById('reviewBrandModel').textContent = 
+            brand && model ? `${brand} ${model}` : '—';
+        document.getElementById('reviewCondition').textContent = 
+            condition ? condition.value : '—';
+        document.getElementById('reviewCategory').textContent = category || '—';
+        document.getElementById('reviewMovement').textContent = movement || '—';
+        document.getElementById('reviewCase').textContent = caseMaterial || '—';
+        document.getElementById('reviewBand').textContent = bandMaterial || '—';
+        
+        // Update images preview
+        const reviewImages = document.getElementById('reviewImages');
+        if (uploadedImages.length > 0) {
+            reviewImages.innerHTML = '';
+            uploadedImages.slice(0, 5).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.alt = `Image ${index + 1}`;
+                    reviewImages.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+            if (uploadedImages.length > 5) {
+                const more = document.createElement('span');
+                more.className = 'text-muted';
+                more.textContent = `+${uploadedImages.length - 5} more`;
+                reviewImages.appendChild(more);
+            }
+        } else {
+            reviewImages.innerHTML = '<span class="text-muted">No images uploaded</span>';
+        }
+    }
+    
+    // Form submission
+    document.getElementById('listingForm').addEventListener('submit', function(e) {
+        // Create FormData and append images
+        const formData = new FormData(this);
+        
+        // Remove existing images field and add our uploaded ones
+        formData.delete('images');
+        uploadedImages.forEach((file, index) => {
+            formData.append('images', file);
+        });
+        
+        // The form will submit normally, but you can use AJAX if preferred
+    });
+    
+    // Reset condition border on selection
+    document.querySelectorAll('input[name="condition"]').forEach(input => {
+        input.addEventListener('change', () => {
+            document.querySelectorAll('.condition-option label').forEach(label => {
+                label.style.borderColor = '';
+            });
+        });
+    });
+</script>
+{% endblock %}

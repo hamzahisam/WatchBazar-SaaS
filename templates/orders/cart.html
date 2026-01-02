@@ -1,0 +1,409 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Shopping Cart - WatchBazaar PK{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cart-header {
+        background: linear-gradient(180deg, rgba(198, 169, 97, 0.1) 0%, rgba(0,0,0,0) 100%);
+        padding: 40px 0;
+    }
+    
+    .cart-item {
+        background-color: #1a1a1a;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 20px;
+    }
+    
+    .cart-item-image {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+    
+    .cart-item-brand {
+        color: var(--wb-primary);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+    
+    .cart-item-name {
+        color: #fff;
+        font-size: 1.2rem;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    
+    .cart-item-name:hover {
+        color: var(--wb-primary);
+    }
+    
+    .cart-item-price {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--wb-primary);
+    }
+    
+    .transaction-method {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 16px;
+        background-color: #2a2a2a;
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+    
+    .transaction-method.meeting {
+        color: #28a745;
+    }
+    
+    .transaction-method.delivery {
+        color: #17a2b8;
+    }
+    
+    .remove-btn {
+        color: #dc3545;
+        background: none;
+        border: none;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+    
+    .remove-btn:hover {
+        text-decoration: underline;
+    }
+    
+    .cart-summary {
+        background-color: #1a1a1a;
+        border-radius: 12px;
+        padding: 30px;
+        position: sticky;
+        top: 100px;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #333;
+    }
+    
+    .summary-row:last-of-type {
+        border-bottom: none;
+    }
+    
+    .summary-label {
+        color: #888;
+    }
+    
+    .summary-value {
+        color: #fff;
+        font-weight: 500;
+    }
+    
+    .summary-total {
+        font-size: 1.5rem;
+        padding-top: 20px;
+        margin-top: 10px;
+        border-top: 2px solid #333;
+    }
+    
+    .summary-total .summary-value {
+        color: var(--wb-primary);
+        font-weight: 700;
+    }
+    
+    .promo-input {
+        background-color: #2a2a2a;
+        border: 1px solid #444;
+        color: #fff;
+        border-radius: 8px;
+    }
+    
+    .promo-input:focus {
+        background-color: #2a2a2a;
+        border-color: var(--wb-primary);
+        color: #fff;
+        box-shadow: none;
+    }
+    
+    .empty-cart {
+        text-align: center;
+        padding: 60px 20px;
+    }
+    
+    .empty-cart-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background-color: #1a1a1a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 25px;
+    }
+    
+    @media (max-width: 767px) {
+        .cart-item-image {
+            width: 80px;
+            height: 80px;
+        }
+        
+        .cart-summary {
+            margin-top: 30px;
+            position: static;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="cart-header">
+    <div class="container">
+        <h1 class="display-5 text-center text-light mb-2">Shopping Cart</h1>
+        <p class="text-center text-muted">Review your items before checkout</p>
+    </div>
+</section>
+
+<section class="pb-6">
+    <div class="container">
+        {% if cart_items %}
+        <div class="row">
+            <!-- Cart Items -->
+            <div class="col-lg-8">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="text-light mb-0">{{ cart_items.count }} item{{ cart_items.count|pluralize }} in cart</h5>
+                    <button class="btn btn-link text-muted p-0" onclick="clearCart()">
+                        <span data-feather="trash-2" style="width:16px;height:16px;"></span> Clear Cart
+                    </button>
+                </div>
+                
+                {% for item in cart_items %}
+                <div class="cart-item" id="cartItem{{ item.id }}">
+                    <div class="row align-items-center">
+                        <div class="col-md-7">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ item.watch.primary_image.url }}" alt="{{ item.watch.model }}" 
+                                     class="cart-item-image me-4">
+                                <div>
+                                    <p class="cart-item-brand mb-1">{{ item.watch.brand }}</p>
+                                    <a href="{% url 'watch_detail' item.watch.id %}" class="cart-item-name">
+                                        {{ item.watch.model }}
+                                    </a>
+                                    {% if item.watch.model_number %}
+                                    <p class="text-muted small mb-2">Ref: {{ item.watch.model_number }}</p>
+                                    {% endif %}
+                                    
+                                    <div class="d-flex align-items-center gap-3 mt-2">
+                                        <span class="transaction-method {% if item.transaction_method == 'meeting' %}meeting{% else %}delivery{% endif %}">
+                                            {% if item.transaction_method == 'meeting' %}
+                                            <span data-feather="map-pin" style="width:14px;height:14px;" class="me-1"></span> Karachi Meeting
+                                            {% else %}
+                                            <span data-feather="truck" style="width:14px;height:14px;" class="me-1"></span> Delivery
+                                            {% endif %}
+                                        </span>
+                                        
+                                        <button type="button" class="remove-btn" onclick="removeFromCart({{ item.id }})">
+                                            <span data-feather="trash" style="width:14px;height:14px;"></span> Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-5 text-md-end mt-3 mt-md-0">
+                            <p class="cart-item-price mb-0">Rs. {{ item.watch.price|floatformat:0|intcomma }}</p>
+                            {% if item.transaction_method == 'delivery' %}
+                            <small class="text-muted">+ Rs. 800 delivery</small>
+                            {% endif %}
+                            
+                            {% if item.offer_accepted %}
+                            <div class="mt-2">
+                                <span class="badge bg-success">
+                                    <span data-feather="check" style="width:12px;height:12px;"></span> Offer Accepted
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <!-- Recently Viewed -->
+                {% if recently_viewed %}
+                <div class="mt-5">
+                    <h5 class="text-light mb-4">Recently Viewed</h5>
+                    <div class="row g-4">
+                        {% for watch in recently_viewed %}
+                        <div class="col-md-4">
+                            {% include 'components/watch_card.html' with watch=watch show_cart_btn=True %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Order Summary -->
+            <div class="col-lg-4">
+                <div class="cart-summary">
+                    <h5 class="text-light mb-4">Order Summary</h5>
+                    
+                    <div class="summary-row">
+                        <span class="summary-label">Subtotal</span>
+                        <span class="summary-value">Rs. {{ subtotal|floatformat:0|intcomma }}</span>
+                    </div>
+                    
+                    <div class="summary-row">
+                        <span class="summary-label">Delivery Fee</span>
+                        <span class="summary-value">
+                            {% if delivery_fee > 0 %}
+                            Rs. {{ delivery_fee|floatformat:0|intcomma }}
+                            {% else %}
+                            <span class="text-success">Free</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    {% if discount > 0 %}
+                    <div class="summary-row">
+                        <span class="summary-label text-success">Discount</span>
+                        <span class="summary-value text-success">-Rs. {{ discount|floatformat:0|intcomma }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="summary-row summary-total">
+                        <span class="summary-label text-light">Total</span>
+                        <span class="summary-value">Rs. {{ total|floatformat:0|intcomma }}</span>
+                    </div>
+                    
+                    <!-- Promo Code -->
+                    <div class="mt-4">
+                        <form id="promoForm" class="d-flex gap-2">
+                            {% csrf_token %}
+                            <input type="text" class="form-control promo-input" name="promo_code" 
+                                   placeholder="Promo code">
+                            <button type="submit" class="btn btn-outline-primary">Apply</button>
+                        </form>
+                    </div>
+                    
+                    <a href="{% url 'checkout' %}" class="btn btn-primary btn-lg w-100 mt-4">
+                        <span data-feather="credit-card" style="width:18px;height:18px;"></span> Proceed to Checkout
+                    </a>
+                    
+                    <a href="{% url 'watch_list' %}" class="btn btn-outline-light w-100 mt-3">
+                        Continue Shopping
+                    </a>
+                    
+                    <!-- Trust Badges -->
+                    <div class="mt-4 pt-4 border-top border-secondary">
+                        <div class="d-flex justify-content-center gap-4 text-muted">
+                            <div class="text-center">
+                                <span data-feather="shield" style="width:20px;height:20px;"></span>
+                                <small class="d-block mt-1">Secure</small>
+                            </div>
+                            <div class="text-center">
+                                <span data-feather="check-circle" style="width:20px;height:20px;"></span>
+                                <small class="d-block mt-1">Verified</small>
+                            </div>
+                            <div class="text-center">
+                                <span data-feather="lock" style="width:20px;height:20px;"></span>
+                                <small class="d-block mt-1">Protected</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <!-- Empty Cart -->
+        <div class="empty-cart">
+            <div class="empty-cart-icon">
+                <span data-feather="shopping-cart" style="width:40px;height:40px;color:#444;"></span>
+            </div>
+            <h4 class="text-light mb-3">Your cart is empty</h4>
+            <p class="text-muted mb-4">Looks like you haven't added any watches yet.</p>
+            <a href="{% url 'watch_list' %}" class="btn btn-primary btn-lg">
+                <span data-feather="search" style="width:18px;height:18px;"></span> Browse Watches
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function removeFromCart(itemId) {
+        if (!confirm('Remove this item from your cart?')) {
+            return;
+        }
+        
+        fetch(`/cart/remove/${itemId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById(`cartItem${itemId}`).remove();
+                location.reload(); // Reload to update totals
+            } else {
+                alert(data.message || 'Failed to remove item');
+            }
+        });
+    }
+    
+    function clearCart() {
+        if (!confirm('Remove all items from your cart?')) {
+            return;
+        }
+        
+        fetch('/cart/clear/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Failed to clear cart');
+            }
+        });
+    }
+    
+    // Promo code form
+    document.getElementById('promoForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        fetch('/cart/apply-promo/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Invalid promo code');
+            }
+        });
+    });
+</script>
+{% endblock %}

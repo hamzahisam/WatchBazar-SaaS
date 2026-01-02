@@ -1,0 +1,395 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Admin Dashboard - WatchBazaar PK{% endblock %}
+
+{% block admin_title %}Admin Dashboard{% endblock %}
+
+{% block admin_content %}
+<!-- KPI Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-primary bg-opacity-10">
+                <span data-feather="watch" class="text-primary"></span>
+            </div>
+            <div class="kpi-content">
+                <p class="kpi-label">Total Listings</p>
+                <h3 class="kpi-value">{{ total_listings }}</h3>
+                <span class="kpi-change positive">
+                    <span data-feather="trending-up" style="width:12px;height:12px;"></span> +{{ new_listings_today }} today
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-success bg-opacity-10">
+                <span data-feather="users" class="text-success"></span>
+            </div>
+            <div class="kpi-content">
+                <p class="kpi-label">Total Users</p>
+                <h3 class="kpi-value">{{ total_users }}</h3>
+                <span class="kpi-change positive">
+                    <span data-feather="trending-up" style="width:12px;height:12px;"></span> +{{ new_users_today }} today
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-warning bg-opacity-10">
+                <span data-feather="shopping-bag" class="text-warning"></span>
+            </div>
+            <div class="kpi-content">
+                <p class="kpi-label">Total Orders</p>
+                <h3 class="kpi-value">{{ total_orders }}</h3>
+                <span class="kpi-change positive">
+                    <span data-feather="trending-up" style="width:12px;height:12px;"></span> +{{ new_orders_today }} today
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card">
+            <div class="kpi-icon bg-info bg-opacity-10">
+                <span data-feather="dollar-sign" class="text-info"></span>
+            </div>
+            <div class="kpi-content">
+                <p class="kpi-label">Total Revenue</p>
+                <h3 class="kpi-value">Rs. {{ total_revenue|floatformat:0|intcomma }}</h3>
+                <span class="kpi-change positive">
+                    <span data-feather="trending-up" style="width:12px;height:12px;"></span> +{{ revenue_growth }}% vs last month
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pending Actions Alert -->
+{% if pending_listings > 0 or pending_sellers > 0 %}
+<div class="alert border-0 mb-4" style="background-color:rgba(255,193,7,0.1);">
+    <div class="d-flex align-items-center">
+        <span data-feather="alert-triangle" style="width:24px;height:24px;color:#ffc107;" class="me-3"></span>
+        <div>
+            <h6 class="text-warning mb-1">Pending Actions Required</h6>
+            <p class="text-muted mb-0">
+                {% if pending_listings > 0 %}{{ pending_listings }} listings{% endif %}
+                {% if pending_listings > 0 and pending_sellers > 0 %} and {% endif %}
+                {% if pending_sellers > 0 %}{{ pending_sellers }} seller applications{% endif %}
+                awaiting review.
+            </p>
+        </div>
+        <div class="ms-auto">
+            {% if pending_listings > 0 %}
+            <a href="{% url 'admin_listings_approval' %}" class="btn btn-warning btn-sm text-dark">Review Listings</a>
+            {% endif %}
+            {% if pending_sellers > 0 %}
+            <a href="{% url 'admin_seller_onboarding' %}" class="btn btn-warning btn-sm text-dark">Review Sellers</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Charts Row -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card bg-dark border-0 h-100">
+            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                <h6 class="text-light mb-0">Revenue Overview</h6>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-secondary active" data-period="week">Week</button>
+                    <button class="btn btn-outline-secondary" data-period="month">Month</button>
+                    <button class="btn btn-outline-secondary" data-period="year">Year</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="revenueChart" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card bg-dark border-0 h-100">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="text-light mb-0">Listings by Category</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column -->
+    <div class="col-lg-6">
+        <!-- Pending Listings -->
+        <div class="card bg-dark border-0 mb-4">
+            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                <h6 class="text-light mb-0">
+                    <span data-feather="clock" style="width:18px;height:18px;color:var(--wb-primary);" class="me-2"></span>
+                    Pending Listings
+                </h6>
+                <a href="{% url 'admin_listings_approval' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body pt-0">
+                {% if pending_listings_list %}
+                {% for listing in pending_listings_list %}
+                <div class="d-flex align-items-center py-3 {% if not forloop.last %}border-bottom border-secondary{% endif %}">
+                    <img src="{{ listing.primary_image.url }}" 
+                         style="width:50px;height:50px;object-fit:cover;border-radius:8px;" class="me-3" alt="">
+                    <div class="flex-grow-1">
+                        <p class="text-light mb-0">{{ listing.brand }} {{ listing.model }}</p>
+                        <small class="text-muted">by {{ listing.seller.store_name }} • {{ listing.created_at|timesince }} ago</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-success btn-sm" onclick="approveListing({{ listing.id }})">
+                            <span data-feather="check" style="width:14px;height:14px;"></span>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="rejectListing({{ listing.id }})">
+                            <span data-feather="x" style="width:14px;height:14px;"></span>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-4">
+                    <span data-feather="check-circle" style="width:40px;height:40px;color:#28a745;" class="mb-2"></span>
+                    <p class="text-muted mb-0">All caught up!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Recent Orders -->
+        <div class="card bg-dark border-0">
+            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                <h6 class="text-light mb-0">
+                    <span data-feather="shopping-bag" style="width:18px;height:18px;color:var(--wb-primary);" class="me-2"></span>
+                    Recent Orders
+                </h6>
+                <a href="{% url 'admin_orders' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body pt-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Buyer</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'admin_order_detail' order.id %}" class="text-primary">
+                                        #{{ order.order_number }}
+                                    </a>
+                                </td>
+                                <td>{{ order.customer_name }}</td>
+                                <td>Rs. {{ order.total|floatformat:0|intcomma }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if order.status == 'pending' %}bg-warning text-dark
+                                        {% elif order.status == 'confirmed' %}bg-info
+                                        {% elif order.status == 'completed' %}bg-success
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ order.status|title }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Column -->
+    <div class="col-lg-6">
+        <!-- Seller Applications -->
+        <div class="card bg-dark border-0 mb-4">
+            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                <h6 class="text-light mb-0">
+                    <span data-feather="user-plus" style="width:18px;height:18px;color:var(--wb-primary);" class="me-2"></span>
+                    Seller Applications
+                </h6>
+                <a href="{% url 'admin_seller_onboarding' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body pt-0">
+                {% if pending_sellers_list %}
+                {% for seller in pending_sellers_list %}
+                <div class="d-flex align-items-center py-3 {% if not forloop.last %}border-bottom border-secondary{% endif %}">
+                    <div class="me-3" style="width:40px;height:40px;background:#333;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <span data-feather="user" style="width:18px;height:18px;color:#888;"></span>
+                    </div>
+                    <div class="flex-grow-1">
+                        <p class="text-light mb-0">{{ seller.store_name }}</p>
+                        <small class="text-muted">{{ seller.business_type }} • {{ seller.city }}</small>
+                    </div>
+                    <a href="{% url 'admin_seller_detail' seller.id %}" class="btn btn-outline-primary btn-sm">
+                        Review
+                    </a>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-4">
+                    <span data-feather="users" style="width:40px;height:40px;color:#444;" class="mb-2"></span>
+                    <p class="text-muted mb-0">No pending applications</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Platform Statistics -->
+        <div class="card bg-dark border-0 mb-4">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="text-light mb-0">Platform Statistics</h6>
+            </div>
+            <div class="card-body pt-0">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="p-3 bg-black rounded text-center">
+                            <h4 class="text-primary mb-1">{{ verified_sellers }}</h4>
+                            <small class="text-muted">Verified Sellers</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 bg-black rounded text-center">
+                            <h4 class="text-success mb-1">{{ completed_transactions }}</h4>
+                            <small class="text-muted">Completed Transactions</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 bg-black rounded text-center">
+                            <h4 class="text-info mb-1">{{ avg_response_time }}</h4>
+                            <small class="text-muted">Avg Response Time</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 bg-black rounded text-center">
+                            <h4 class="text-warning mb-1">{{ conversion_rate }}%</h4>
+                            <small class="text-muted">Conversion Rate</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="card bg-dark border-0">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="text-light mb-0">
+                    <span data-feather="activity" style="width:18px;height:18px;color:var(--wb-primary);" class="me-2"></span>
+                    Recent Activity
+                </h6>
+            </div>
+            <div class="card-body pt-0">
+                {% for activity in recent_activity %}
+                <div class="d-flex py-2 {% if not forloop.last %}border-bottom border-secondary{% endif %}">
+                    <div class="me-3">
+                        <span data-feather="{{ activity.icon }}" style="width:16px;height:16px;color:{{ activity.color }};"></span>
+                    </div>
+                    <div>
+                        <p class="text-light small mb-0">{{ activity.message }}</p>
+                        <small class="text-muted">{{ activity.time|timesince }} ago</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Revenue Chart
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(revenueCtx, {
+        type: 'line',
+        data: {
+            labels: {{ revenue_labels|safe }},
+            datasets: [{
+                label: 'Revenue',
+                data: {{ revenue_data|safe }},
+                borderColor: '#c6a961',
+                backgroundColor: 'rgba(198, 169, 97, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { grid: { color: '#333' }, ticks: { color: '#888' } },
+                x: { grid: { display: false }, ticks: { color: '#888' } }
+            }
+        }
+    });
+    
+    // Category Chart
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ category_labels|safe }},
+            datasets: [{
+                data: {{ category_data|safe }},
+                backgroundColor: ['#c6a961', '#28a745', '#17a2b8', '#ffc107', '#6f42c1', '#fd7e14']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#888' }
+                }
+            }
+        }
+    });
+    
+    function approveListing(id) {
+        fetch(`/admin/listings/${id}/approve/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) location.reload();
+            else alert(data.message || 'Failed');
+        });
+    }
+    
+    function rejectListing(id) {
+        const reason = prompt('Reason for rejection:');
+        if (reason) {
+            fetch(`/admin/listings/${id}/reject/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ reason })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) location.reload();
+                else alert(data.message || 'Failed');
+            });
+        }
+    }
+</script>
+{% endblock %}

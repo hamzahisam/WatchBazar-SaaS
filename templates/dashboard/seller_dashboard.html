@@ -1,0 +1,421 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Seller Dashboard - WatchBazaar PK{% endblock %}
+
+{% block dashboard_title %}Seller Dashboard{% endblock %}
+
+{% block dashboard_sidebar %}
+<!-- Override with seller-specific sidebar -->
+<aside class="dashboard-sidebar d-none d-lg-block">
+    <div class="p-4">
+        <div class="d-flex align-items-center mb-4">
+            <img src="{{ seller.logo.url|default:'/static/assets/img/default-store.png' }}" 
+                 style="width:50px;height:50px;border-radius:50%;object-fit:cover;" class="me-3" alt="">
+            <div>
+                <h6 class="text-light mb-0">{{ seller.store_name }}</h6>
+                {% if seller.is_verified %}
+                <small class="text-success">
+                    <span data-feather="check-circle" style="width:12px;height:12px;"></span> Verified
+                </small>
+                {% endif %}
+            </div>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="{% url 'seller_dashboard' %}" class="sidebar-link active">
+                <span data-feather="grid"></span> Dashboard
+            </a>
+            <a href="{% url 'my_listings' %}" class="sidebar-link">
+                <span data-feather="watch"></span> My Listings
+            </a>
+            <a href="{% url 'watch_create' %}" class="sidebar-link">
+                <span data-feather="plus-circle"></span> Add Listing
+            </a>
+            <a href="{% url 'received_offers' %}" class="sidebar-link">
+                <span data-feather="inbox"></span> Received Offers
+                {% if pending_offers_count %}<span class="badge bg-warning text-dark ms-auto">{{ pending_offers_count }}</span>{% endif %}
+            </a>
+            <a href="{% url 'seller_orders' %}" class="sidebar-link">
+                <span data-feather="shopping-bag"></span> Orders
+            </a>
+            <a href="{% url 'seller_earnings' %}" class="sidebar-link">
+                <span data-feather="dollar-sign"></span> Earnings
+            </a>
+            <a href="{% url 'seller_messages' %}" class="sidebar-link">
+                <span data-feather="message-circle"></span> Messages
+            </a>
+            <hr class="border-secondary my-3">
+            <a href="{% url 'seller_settings' %}" class="sidebar-link">
+                <span data-feather="settings"></span> Store Settings
+            </a>
+            <a href="{% url 'seller_analytics' %}" class="sidebar-link">
+                <span data-feather="bar-chart-2"></span> Analytics
+            </a>
+        </nav>
+    </div>
+</aside>
+{% endblock %}
+
+{% block dashboard_content %}
+<!-- Performance Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-primary bg-opacity-10">
+                <span data-feather="watch" class="text-primary"></span>
+            </div>
+            <div>
+                <p class="stat-label">Active Listings</p>
+                <h3 class="stat-value">{{ active_listings_count }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-warning bg-opacity-10">
+                <span data-feather="inbox" class="text-warning"></span>
+            </div>
+            <div>
+                <p class="stat-label">Pending Offers</p>
+                <h3 class="stat-value">{{ pending_offers_count }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-success bg-opacity-10">
+                <span data-feather="check-circle" class="text-success"></span>
+            </div>
+            <div>
+                <p class="stat-label">Total Sales</p>
+                <h3 class="stat-value">{{ total_sales_count }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-info bg-opacity-10">
+                <span data-feather="dollar-sign" class="text-info"></span>
+            </div>
+            <div>
+                <p class="stat-label">Total Earnings</p>
+                <h3 class="stat-value">Rs. {{ total_earnings|floatformat:0|intcomma }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Earnings Chart -->
+<div class="card bg-dark border-0 mb-4">
+    <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+        <h6 class="text-light mb-0">
+            <span data-feather="trending-up" style="width:18px;height:18px;color:var(--wb-primary);" class="me-2"></span>
+            Sales Overview
+        </h6>
+        <div class="btn-group btn-group-sm">
+            <button class="btn btn-outline-secondary active" data-period="week">Week</button>
+            <button class="btn btn-outline-secondary" data-period="month">Month</button>
+            <button class="btn btn-outline-secondary" data-period="year">Year</button>
+        </div>
+    </div>
+    <div class="card-body">
+        <canvas id="salesChart" height="100"></canvas>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Left Column -->
+    <div class="col-lg-8">
+        <!-- Recent Offers -->
+        <div class="card bg-dark border-0 mb-4">
+            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                <h6 class="text-light mb-0">
+                    <span data-feather="inbox" style="width:18px;height:18px;color:var(--wb-primary);" class="me-2"></span>
+                    Recent Offers
+                </h6>
+                <a href="{% url 'received_offers' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body pt-0">
+                {% if recent_offers %}
+                {% for offer in recent_offers %}
+                <div class="d-flex align-items-center py-3 {% if not forloop.last %}border-bottom border-secondary{% endif %}">
+                    <div class="me-3">
+                        <img src="{{ offer.watch.primary_image.url }}" 
+                             style="width:50px;height:50px;object-fit:cover;border-radius:8px;" alt="">
+                    </div>
+                    <div class="flex-grow-1">
+                        <p class="text-light mb-0">{{ offer.watch.model }}</p>
+                        <p class="text-muted small mb-0">
+                            Offer: <span class="text-primary">Rs. {{ offer.amount|floatformat:0|intcomma }}</span>
+                            ({{ offer.percentage_of_asking }}% of asking)
+                        </p>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted d-block mb-2">{{ offer.created_at|timesince }} ago</small>
+                        {% if offer.status == 'pending' %}
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-success" onclick="acceptOffer({{ offer.id }})">
+                                <span data-feather="check" style="width:14px;height:14px;"></span>
+                            </button>
+                            <button class="btn btn-primary" onclick="counterOffer({{ offer.id }})">
+                                <span data-feather="edit-2" style="width:14px;height:14px;"></span>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="declineOffer({{ offer.id }})">
+                                <span data-feather="x" style="width:14px;height:14px;"></span>
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-4">
+                    <span data-feather="inbox" style="width:40px;height:40px;color:#444;" class="mb-3"></span>
+                    <p class="text-muted mb-0">No pending offers</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Recent Orders -->
+        <div class="card bg-dark border-0">
+            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                <h6 class="text-light mb-0">
+                    <span data-feather="shopping-bag" style="width:18px;height:18px;color:var(--wb-primary);" class="me-2"></span>
+                    Recent Orders
+                </h6>
+                <a href="{% url 'seller_orders' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body pt-0">
+                {% if recent_orders %}
+                <div class="table-responsive">
+                    <table class="table table-dark mb-0">
+                        <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Watch</th>
+                                <th>Buyer</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'seller_order_detail' order.id %}" class="text-primary">
+                                        #{{ order.order_number }}
+                                    </a>
+                                </td>
+                                <td>{{ order.items.first.watch.model }}</td>
+                                <td>{{ order.customer_name }}</td>
+                                <td class="text-primary">Rs. {{ order.total|floatformat:0|intcomma }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if order.status == 'pending' %}bg-warning text-dark
+                                        {% elif order.status == 'confirmed' %}bg-info
+                                        {% elif order.status == 'completed' %}bg-success
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ order.status|title }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <span data-feather="shopping-bag" style="width:40px;height:40px;color:#444;" class="mb-3"></span>
+                    <p class="text-muted mb-0">No orders yet</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Column -->
+    <div class="col-lg-4 mt-4 mt-lg-0">
+        <!-- Quick Actions -->
+        <div class="card bg-dark border-0 mb-4">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="text-light mb-0">Quick Actions</h6>
+            </div>
+            <div class="card-body pt-0">
+                <a href="{% url 'watch_create' %}" class="btn btn-primary w-100 mb-2">
+                    <span data-feather="plus" style="width:16px;height:16px;" class="me-2"></span> Add New Listing
+                </a>
+                <a href="{% url 'my_listings' %}" class="btn btn-outline-light w-100 mb-2">
+                    <span data-feather="watch" style="width:16px;height:16px;" class="me-2"></span> Manage Listings
+                </a>
+                <a href="{% url 'seller_analytics' %}" class="btn btn-outline-light w-100">
+                    <span data-feather="bar-chart-2" style="width:16px;height:16px;" class="me-2"></span> View Analytics
+                </a>
+            </div>
+        </div>
+        
+        <!-- My Listings Status -->
+        <div class="card bg-dark border-0 mb-4">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="text-light mb-0">Listings Overview</h6>
+            </div>
+            <div class="card-body pt-0">
+                <div class="d-flex justify-content-between py-2 border-bottom border-secondary">
+                    <span class="text-muted">Active</span>
+                    <span class="text-success fw-bold">{{ active_listings_count }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom border-secondary">
+                    <span class="text-muted">Pending Approval</span>
+                    <span class="text-warning fw-bold">{{ pending_listings_count }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom border-secondary">
+                    <span class="text-muted">Sold</span>
+                    <span class="text-primary fw-bold">{{ sold_listings_count }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2">
+                    <span class="text-muted">Expired</span>
+                    <span class="text-secondary fw-bold">{{ expired_listings_count }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Performance Metrics -->
+        <div class="card bg-dark border-0 mb-4">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="text-light mb-0">This Month</h6>
+            </div>
+            <div class="card-body pt-0">
+                <div class="text-center mb-3">
+                    <h2 class="text-primary mb-0">Rs. {{ monthly_earnings|floatformat:0|intcomma }}</h2>
+                    <small class="text-muted">Total Earnings</small>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-top border-secondary">
+                    <span class="text-muted">Views</span>
+                    <span class="text-light">{{ monthly_views }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2">
+                    <span class="text-muted">Offers Received</span>
+                    <span class="text-light">{{ monthly_offers }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tips -->
+        <div class="card border-0" style="background-color:rgba(198,169,97,0.1);">
+            <div class="card-body">
+                <h6 class="text-primary mb-3">
+                    <span data-feather="zap" style="width:16px;height:16px;"></span> Seller Tip
+                </h6>
+                <p class="text-muted small mb-0">
+                    Respond to offers within 24 hours to increase your conversion rate. 
+                    Buyers are 3x more likely to complete a purchase when they receive quick responses.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Sales Chart
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_labels|safe }},
+            datasets: [{
+                label: 'Sales (Rs.)',
+                data: {{ chart_data|safe }},
+                borderColor: '#c6a961',
+                backgroundColor: 'rgba(198, 169, 97, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#333'
+                    },
+                    ticks: {
+                        color: '#888'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#888'
+                    }
+                }
+            }
+        }
+    });
+    
+    function acceptOffer(offerId) {
+        if (confirm('Accept this offer?')) {
+            fetch(`/offers/${offerId}/accept/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) location.reload();
+                else alert(data.message || 'Failed');
+            });
+        }
+    }
+    
+    function declineOffer(offerId) {
+        if (confirm('Decline this offer?')) {
+            fetch(`/offers/${offerId}/decline/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) location.reload();
+                else alert(data.message || 'Failed');
+            });
+        }
+    }
+    
+    function counterOffer(offerId) {
+        const amount = prompt('Enter your counter offer amount:');
+        if (amount && !isNaN(amount)) {
+            fetch(`/offers/${offerId}/counter/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ amount: parseInt(amount) })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) location.reload();
+                else alert(data.message || 'Failed');
+            });
+        }
+    }
+</script>
+{% endblock %}

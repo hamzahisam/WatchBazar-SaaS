@@ -1,0 +1,417 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="py-0" id="header">
+    <div class="bg-holder" style="background-image:url({% static 'assets/img/gallery/header-bg.png' %});background-position:right top;background-size:contain;"></div>
+    <div class="container">
+        <div class="row align-items-center min-vh-75 min-vh-xl-100">
+            <div class="col-md-8 col-lg-6 text-md-start text-center">
+                <h1 class="display-1 lh-sm text-uppercase text-light">Premium Watches <br class="d-none d-xxl-block" /> For Every Style</h1>
+                <p class="text-muted mt-3 mb-4">Pakistan's trusted marketplace for authentic luxury and pre-owned watches. Buy and sell with confidence.</p>
+                <div class="pt-2">
+                    <a class="btn btn-primary btn-lg me-3" href="{% url 'watch_list' %}">
+                        <span data-feather="search" style="width:18px;height:18px;" class="me-2"></span> Browse Watches
+                    </a>
+                    <a class="btn btn-outline-light btn-lg" href="{% url 'seller_register' %}">
+                        <span data-feather="tag" style="width:18px;height:18px;" class="me-2"></span> Start Selling
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Trust Badges -->
+<section class="py-4 bg-dark-secondary">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-6 col-md-3">
+                <div class="d-flex align-items-center justify-content-center">
+                    <span data-feather="shield" class="text-primary me-2" style="width:24px;height:24px;"></span>
+                    <span class="text-light small">100% Authentic</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="d-flex align-items-center justify-content-center">
+                    <span data-feather="check-circle" class="text-primary me-2" style="width:24px;height:24px;"></span>
+                    <span class="text-light small">Verified Sellers</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="d-flex align-items-center justify-content-center">
+                    <span data-feather="lock" class="text-primary me-2" style="width:24px;height:24px;"></span>
+                    <span class="text-light small">Secure Payments</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="d-flex align-items-center justify-content-center">
+                    <span data-feather="truck" class="text-primary me-2" style="width:24px;height:24px;"></span>
+                    <span class="text-light small">Insured Delivery</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Watches -->
+<section class="py-5" id="featured">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <p class="text-primary text-uppercase small mb-1">Handpicked</p>
+                <h2 class="text-light mb-0">Featured Watches</h2>
+            </div>
+            <a href="{% url 'watch_list' %}" class="btn btn-outline-primary">View All</a>
+        </div>
+        
+        <div class="row g-4">
+            {% for watch in featured_watches %}
+            <div class="col-md-6 col-lg-3">
+                {% include 'components/watch_card.html' with watch=watch %}
+            </div>
+            {% empty %}
+            <!-- Demo Cards -->
+            {% for i in "1234" %}
+            <div class="col-md-6 col-lg-3">
+                <div class="card bg-dark border-0 h-100 card-hover">
+                    <div class="position-relative">
+                        <img src="{% static 'assets/img/gallery/watch-'|add:i|add:'.jpg' %}" 
+                             alt="Watch" style="width:100%;height:200px;object-fit:cover;border-radius:8px 8px 0 0;"
+                             onerror="this.src='https://via.placeholder.com/300x200/1a1a1a/c6a961?text=Watch'">
+                        <span class="badge bg-primary position-absolute" style="top:10px;left:10px;">Featured</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-primary small mb-1">Rolex</p>
+                        <h6 class="text-light mb-2">Submariner Date</h6>
+                        <p class="text-primary fw-bold mb-0">Rs. 2,500,000</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pt-0">
+                        <a href="{% url 'watch_list' %}" class="btn btn-outline-light btn-sm w-100">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Collections -->
+<section class="py-5 bg-dark-secondary" id="collections">
+    <div class="container">
+        <div class="text-center mb-5">
+            <p class="text-primary text-uppercase small mb-1">Browse By</p>
+            <h2 class="text-light">Collections</h2>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <a href="{% url 'watch_list' %}?category=luxury" class="text-decoration-none">
+                    <div class="card bg-dark border-0 overflow-hidden" style="height:250px;">
+                        <div class="card-img-overlay d-flex flex-column justify-content-end" 
+                             style="background:linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);">
+                            <h4 class="text-light mb-1">Luxury Collection</h4>
+                            <p class="text-muted mb-0">Rolex, Patek Philippe, Audemars Piguet</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{% url 'watch_list' %}?category=sport" class="text-decoration-none">
+                    <div class="card bg-dark border-0 overflow-hidden" style="height:250px;">
+                        <div class="card-img-overlay d-flex flex-column justify-content-end" 
+                             style="background:linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);">
+                            <h4 class="text-light mb-1">Sport Watches</h4>
+                            <p class="text-muted mb-0">Omega, TAG Heuer, Breitling</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{% url 'watch_list' %}?category=vintage" class="text-decoration-none">
+                    <div class="card bg-dark border-0 overflow-hidden" style="height:250px;">
+                        <div class="card-img-overlay d-flex flex-column justify-content-end" 
+                             style="background:linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);">
+                            <h4 class="text-light mb-1">Vintage & Rare</h4>
+                            <p class="text-muted mb-0">Collectible timepieces</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="py-5" id="how-it-works">
+    <div class="container">
+        <div class="text-center mb-5">
+            <p class="text-primary text-uppercase small mb-1">Simple Process</p>
+            <h2 class="text-light">How It Works</h2>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-3 text-center">
+                <div class="mx-auto mb-3" style="width:80px;height:80px;background:rgba(198,169,97,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                    <span data-feather="search" class="text-primary" style="width:32px;height:32px;"></span>
+                </div>
+                <h5 class="text-light">1. Browse</h5>
+                <p class="text-muted small">Explore thousands of authentic watches from verified sellers</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="mx-auto mb-3" style="width:80px;height:80px;background:rgba(198,169,97,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                    <span data-feather="message-square" class="text-primary" style="width:32px;height:32px;"></span>
+                </div>
+                <h5 class="text-light">2. Negotiate</h5>
+                <p class="text-muted small">Make offers and communicate directly with sellers</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="mx-auto mb-3" style="width:80px;height:80px;background:rgba(198,169,97,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                    <span data-feather="credit-card" class="text-primary" style="width:32px;height:32px;"></span>
+                </div>
+                <h5 class="text-light">3. Pay Securely</h5>
+                <p class="text-muted small">Protected payments held until you receive your watch</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="mx-auto mb-3" style="width:80px;height:80px;background:rgba(198,169,97,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                    <span data-feather="package" class="text-primary" style="width:32px;height:32px;"></span>
+                </div>
+                <h5 class="text-light">4. Receive</h5>
+                <p class="text-muted small">Insured delivery or in-person meeting options</p>
+            </div>
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{% url 'how_it_works' %}" class="btn btn-outline-primary">Learn More</a>
+        </div>
+    </div>
+</section>
+
+<!-- New Arrivals -->
+<section class="py-5 bg-dark-secondary">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <p class="text-primary text-uppercase small mb-1">Just Listed</p>
+                <h2 class="text-light mb-0">New Arrivals</h2>
+            </div>
+            <a href="{% url 'watch_list' %}?sort=newest" class="btn btn-outline-primary">View All</a>
+        </div>
+        
+        <div class="row g-4">
+            {% for watch in new_arrivals %}
+            <div class="col-md-6 col-lg-3">
+                {% include 'components/watch_card.html' with watch=watch %}
+            </div>
+            {% empty %}
+            <!-- Demo Cards -->
+            {% for i in "5678" %}
+            <div class="col-md-6 col-lg-3">
+                <div class="card bg-dark border-0 h-100 card-hover">
+                    <div class="position-relative">
+                        <img src="https://via.placeholder.com/300x200/1a1a1a/c6a961?text=New+Arrival" 
+                             alt="Watch" style="width:100%;height:200px;object-fit:cover;border-radius:8px 8px 0 0;">
+                        <span class="badge bg-success position-absolute" style="top:10px;left:10px;">New</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-primary small mb-1">Omega</p>
+                        <h6 class="text-light mb-2">Speedmaster Professional</h6>
+                        <p class="text-primary fw-bold mb-0">Rs. 850,000</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pt-0">
+                        <a href="{% url 'watch_list' %}" class="btn btn-outline-light btn-sm w-100">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Popular Brands -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <p class="text-primary text-uppercase small mb-1">Top Brands</p>
+            <h2 class="text-light">Shop By Brand</h2>
+        </div>
+        
+        <div class="row g-4 justify-content-center">
+            {% for brand in "Rolex,Omega,TAG Heuer,Cartier,Patek Philippe,Audemars Piguet"|make_list %}
+            {% endfor %}
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{% url 'watch_list' %}?brand=rolex" class="text-decoration-none">
+                    <div class="card bg-dark border-0 p-4 text-center card-hover">
+                        <h6 class="text-light mb-0">Rolex</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{% url 'watch_list' %}?brand=omega" class="text-decoration-none">
+                    <div class="card bg-dark border-0 p-4 text-center card-hover">
+                        <h6 class="text-light mb-0">Omega</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{% url 'watch_list' %}?brand=tag-heuer" class="text-decoration-none">
+                    <div class="card bg-dark border-0 p-4 text-center card-hover">
+                        <h6 class="text-light mb-0">TAG Heuer</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{% url 'watch_list' %}?brand=cartier" class="text-decoration-none">
+                    <div class="card bg-dark border-0 p-4 text-center card-hover">
+                        <h6 class="text-light mb-0">Cartier</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{% url 'watch_list' %}?brand=patek-philippe" class="text-decoration-none">
+                    <div class="card bg-dark border-0 p-4 text-center card-hover">
+                        <h6 class="text-light mb-0">Patek Philippe</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{% url 'watch_list' %}?brand=ap" class="text-decoration-none">
+                    <div class="card bg-dark border-0 p-4 text-center card-hover">
+                        <h6 class="text-light mb-0">Audemars Piguet</h6>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'watch_list' %}" class="text-primary">View all brands →</a>
+        </div>
+    </div>
+</section>
+
+<!-- Sell Your Watch CTA -->
+<section class="py-5" style="background:linear-gradient(135deg, rgba(198,169,97,0.15) 0%, rgba(198,169,97,0.05) 100%);">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h2 class="text-light mb-2">Ready to Sell Your Watch?</h2>
+                <p class="text-muted mb-lg-0">Join hundreds of sellers on Pakistan's most trusted watch marketplace. Free listings, low commission, verified buyers.</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <a href="{% url 'seller_register' %}" class="btn btn-primary btn-lg">
+                    <span data-feather="plus" style="width:18px;height:18px;" class="me-2"></span> Start Selling
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats -->
+<section class="py-5 bg-dark-secondary">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-6 col-md-3">
+                <h2 class="display-5 fw-bold text-primary mb-2">10K+</h2>
+                <p class="text-muted mb-0">Happy Customers</p>
+            </div>
+            <div class="col-6 col-md-3">
+                <h2 class="display-5 fw-bold text-primary mb-2">5K+</h2>
+                <p class="text-muted mb-0">Watches Sold</p>
+            </div>
+            <div class="col-6 col-md-3">
+                <h2 class="display-5 fw-bold text-primary mb-2">500+</h2>
+                <p class="text-muted mb-0">Verified Sellers</p>
+            </div>
+            <div class="col-6 col-md-3">
+                <h2 class="display-5 fw-bold text-primary mb-2">50+</h2>
+                <p class="text-muted mb-0">Premium Brands</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Preview -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="text-center mb-5">
+                    <p class="text-primary text-uppercase small mb-1">Common Questions</p>
+                    <h2 class="text-light">Frequently Asked Questions</h2>
+                </div>
+                
+                <div class="accordion" id="homeFaq">
+                    <div class="accordion-item bg-dark border-0 mb-3">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button bg-dark text-light" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                How do I know the watches are authentic?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#homeFaq">
+                            <div class="accordion-body text-muted">
+                                All sellers must provide documentation and high-quality photos. High-value watches undergo expert verification. Our buyer protection covers you if any authenticity issues arise.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item bg-dark border-0 mb-3">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed bg-dark text-light" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                What payment methods do you accept?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#homeFaq">
+                            <div class="accordion-body text-muted">
+                                We accept bank transfers, JazzCash, EasyPaisa, credit/debit cards, and cash on delivery for orders under Rs. 100,000.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item bg-dark border-0">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed bg-dark text-light" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                Can I meet the seller in person?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#homeFaq">
+                            <div class="accordion-body text-muted">
+                                Yes! We support in-person meetings at safe public locations. You can select this option during checkout.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <a href="{% url 'faq' %}" class="btn btn-outline-primary">View All FAQs</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .accordion-button {
+        box-shadow: none !important;
+        border-radius: 8px !important;
+    }
+    .accordion-button:not(.collapsed) {
+        background: var(--wb-dark-secondary) !important;
+        color: var(--wb-primary) !important;
+    }
+    .accordion-button::after {
+        filter: brightness(0) invert(0.7);
+    }
+    .accordion-body {
+        background: var(--wb-dark-secondary);
+        border-radius: 0 0 8px 8px;
+    }
+    .bg-dark-secondary {
+        background-color: var(--wb-dark-secondary) !important;
+    }
+</style>
+{% endblock %}

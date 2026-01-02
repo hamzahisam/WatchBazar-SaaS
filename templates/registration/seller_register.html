@@ -1,0 +1,39 @@
+{% extends 'base_auth.html' %}
+{% load static %}
+
+{% block title %}Become a Seller - WatchBazaar PK{% endblock %}
+
+{% block auth_title %}Become a Seller{% endblock %}
+{% block auth_subtitle %}Start selling your watches on Pakistan's premier marketplace{% endblock %}
+
+{% block auth_form %}
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label class="form-label text-muted">Store Name</label>
+        <input type="text" class="form-control bg-dark border-secondary text-light" name="store_name" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label text-muted">Business Type</label>
+        <select class="form-select bg-dark border-secondary text-light" name="business_type">
+            <option value="individual">Individual Seller</option>
+            <option value="shop">Watch Shop</option>
+            <option value="dealer">Authorized Dealer</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label text-muted">City</label>
+        <input type="text" class="form-control bg-dark border-secondary text-light" name="city" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label text-muted">CNIC (for verification)</label>
+        <input type="text" class="form-control bg-dark border-secondary text-light" name="cnic" placeholder="XXXXX-XXXXXXX-X" required>
+    </div>
+    <div class="mb-4">
+        <label class="form-label text-muted">About Your Store</label>
+        <textarea class="form-control bg-dark border-secondary text-light" name="description" rows="3"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary w-100 py-2">Submit Application</button>
+</form>
+<p class="text-muted text-center mt-4 small">Applications are typically reviewed within 24-48 hours.</p>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% comment %}
+Star Rating Component
+Usage: {% include 'components/star_rating.html' with rating=4.5 %}
+
+Expects:
+- rating: Number (0-5)
+- Optional: count (review count)
+- Optional: size (small, medium, large) - default medium
+- Optional: editable (boolean) - for forms
+- Optional: input_name - name attribute for editable input
+{% endcomment %}
+
+{% with size=size|default:'medium' %}
+
+{% if editable %}
+{# Editable Star Rating for Forms #}
+<div class="star-rating-input" data-rating="{{ rating|default:0 }}">
+    <input type="hidden" name="{{ input_name|default:'rating' }}" id="ratingInput" value="{{ rating|default:0 }}">
+    {% for i in "12345" %}
+    <span class="star" data-value="{{ i }}" 
+          style="cursor:pointer;font-size:{% if size == 'small' %}16px{% elif size == 'large' %}28px{% else %}22px{% endif %};"
+          onclick="setRating({{ i }})">
+        ★
+    </span>
+    {% endfor %}
+</div>
+
+<script>
+    function setRating(value) {
+        document.getElementById('ratingInput').value = value;
+        const stars = document.querySelectorAll('.star-rating-input .star');
+        stars.forEach((star, index) => {
+            star.style.color = index < value ? '#c6a961' : '#333';
+        });
+    }
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        const initial = parseInt(document.querySelector('.star-rating-input').dataset.rating) || 0;
+        setRating(initial);
+    });
+    
+    // Hover effect
+    document.querySelectorAll('.star-rating-input .star').forEach(star => {
+        star.addEventListener('mouseenter', function() {
+            const value = parseInt(this.dataset.value);
+            const stars = document.querySelectorAll('.star-rating-input .star');
+            stars.forEach((s, index) => {
+                s.style.color = index < value ? '#c6a961' : '#333';
+            });
+        });
+        star.addEventListener('mouseleave', function() {
+            const current = parseInt(document.getElementById('ratingInput').value) || 0;
+            const stars = document.querySelectorAll('.star-rating-input .star');
+            stars.forEach((s, index) => {
+                s.style.color = index < current ? '#c6a961' : '#333';
+            });
+        });
+    });
+</script>
+
+{% else %}
+{# Display-only Star Rating #}
+<div class="star-rating d-inline-flex align-items-center">
+    <span class="stars position-relative d-inline-block" 
+          style="font-size:{% if size == 'small' %}12px{% elif size == 'large' %}20px{% else %}16px{% endif %};">
+        {# Empty stars background #}
+        <span class="stars-empty" style="color:#333;">★★★★★</span>
+        {# Filled stars overlay #}
+        <span class="stars-filled position-absolute" 
+              style="left:0;top:0;overflow:hidden;white-space:nowrap;color:#c6a961;width:{% widthratio rating 5 100 %}%;">
+            ★★★★★
+        </span>
+    </span>
+    
+    {% if count is not None %}
+    <span class="text-muted ms-2" style="font-size:{% if size == 'small' %}10px{% elif size == 'large' %}14px{% else %}12px{% endif %};">
+        {% if rating %}{{ rating|floatformat:1 }}{% endif %}
+        ({{ count }})
+    </span>
+    {% elif rating %}
+    <span class="text-muted ms-2" style="font-size:{% if size == 'small' %}10px{% elif size == 'large' %}14px{% else %}12px{% endif %};">
+        {{ rating|floatformat:1 }}
+    </span>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endwith %}

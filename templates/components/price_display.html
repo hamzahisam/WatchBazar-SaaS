@@ -1,0 +1,51 @@
+{% comment %}
+Price Display Component
+Usage: {% include 'components/price_display.html' with price=watch.price %}
+
+Expects:
+- price: Number (price in PKR)
+- Optional: original_price (for showing discount)
+- Optional: size (small, medium, large)
+- Optional: currency (default: Rs.)
+- Optional: show_negotiable (boolean)
+{% endcomment %}
+
+{% load humanize %}
+
+{% with size=size|default:'medium' currency=currency|default:'Rs.' %}
+
+<div class="price-display d-inline-flex align-items-baseline flex-wrap gap-2">
+    {# Current Price #}
+    <span class="{% if size == 'small' %}h6{% elif size == 'large' %}display-6{% else %}h4{% endif %} text-primary mb-0 fw-bold">
+        {{ currency }} {{ price|floatformat:0|intcomma }}
+    </span>
+    
+    {# Original Price (if discounted) #}
+    {% if original_price and original_price > price %}
+    <span class="text-muted text-decoration-line-through {% if size == 'small' %}small{% elif size == 'large' %}h5{% else %}h6{% endif %}">
+        {{ currency }} {{ original_price|floatformat:0|intcomma }}
+    </span>
+    
+    {# Discount Badge #}
+    {% widthratio original_price|add:"-"|add:price original_price 100 as discount_percent %}
+    <span class="badge bg-success {% if size == 'small' %}small{% endif %}">
+        {{ discount_percent|floatformat:0 }}% OFF
+    </span>
+    {% endif %}
+    
+    {# Negotiable Badge #}
+    {% if show_negotiable %}
+    <span class="badge bg-dark border border-primary text-primary {% if size == 'small' %}small{% endif %}">
+        Negotiable
+    </span>
+    {% endif %}
+</div>
+
+{# Per Month (for EMI/Installment) #}
+{% if show_emi and price > 50000 %}
+<p class="text-muted small mt-1 mb-0">
+    or {{ currency }} {{ price|divisibleby:12|intcomma }}/month for 12 months
+</p>
+{% endif %}
+
+{% endwith %}

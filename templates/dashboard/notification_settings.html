@@ -1,0 +1,51 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Notification Settings - WatchBazaar PK{% endblock %}
+
+{% block dashboard_title %}Notification Settings{% endblock %}
+
+{% block dashboard_content %}
+<div class="card bg-dark border-0">
+    <div class="card-body">
+        <form method="POST">
+            {% csrf_token %}
+            <h6 class="text-primary mb-3">Email Notifications</h6>
+            <div class="mb-4">
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="emailOrders" checked>
+                    <label class="form-check-label text-light" for="emailOrders">Order updates</label>
+                    <p class="text-muted small mb-0">Get notified about order status changes</p>
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="emailOffers" checked>
+                    <label class="form-check-label text-light" for="emailOffers">Offers</label>
+                    <p class="text-muted small mb-0">Notifications about new offers and counter offers</p>
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="emailMessages" checked>
+                    <label class="form-check-label text-light" for="emailMessages">Messages</label>
+                    <p class="text-muted small mb-0">Get notified about new messages</p>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="emailNewsletter">
+                    <label class="form-check-label text-light" for="emailNewsletter">Newsletter</label>
+                    <p class="text-muted small mb-0">Weekly digest of new listings and deals</p>
+                </div>
+            </div>
+            
+            <hr class="border-secondary">
+            
+            <h6 class="text-primary mb-3">Push Notifications</h6>
+            <div class="mb-4">
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="pushAll" checked>
+                    <label class="form-check-label text-light" for="pushAll">Enable push notifications</label>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Save Preferences</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

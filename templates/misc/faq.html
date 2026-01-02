@@ -1,0 +1,466 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}FAQ - WatchBazaar PK{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="py-5 text-center" style="background:var(--wb-dark-secondary);">
+    <div class="container py-4">
+        <h1 class="display-5 fw-bold text-light mb-3">Frequently Asked Questions</h1>
+        <p class="text-muted mx-auto" style="max-width:500px;">
+            Find answers to common questions about buying and selling on WatchBazaar PK.
+        </p>
+    </div>
+</section>
+
+<!-- Search -->
+<section class="py-4" style="background:var(--wb-dark-secondary);border-bottom:1px solid #333;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="position-relative">
+                    <input type="text" class="form-control bg-dark border-secondary text-light ps-5" 
+                           id="faqSearch" placeholder="Search FAQs...">
+                    <span data-feather="search" class="position-absolute text-muted" 
+                          style="left:15px;top:50%;transform:translateY(-50%);width:18px;height:18px;"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Categories -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar Categories -->
+            <div class="col-lg-3 mb-4">
+                <div class="nav flex-column nav-pills" id="faq-tabs" role="tablist">
+                    <button class="nav-link active text-start bg-transparent border-0 text-light py-3" 
+                            data-bs-toggle="pill" data-bs-target="#buying" type="button">
+                        <span data-feather="shopping-bag" class="me-2" style="width:16px;height:16px;"></span>
+                        Buying
+                    </button>
+                    <button class="nav-link text-start bg-transparent border-0 text-muted py-3" 
+                            data-bs-toggle="pill" data-bs-target="#selling" type="button">
+                        <span data-feather="tag" class="me-2" style="width:16px;height:16px;"></span>
+                        Selling
+                    </button>
+                    <button class="nav-link text-start bg-transparent border-0 text-muted py-3" 
+                            data-bs-toggle="pill" data-bs-target="#payments" type="button">
+                        <span data-feather="credit-card" class="me-2" style="width:16px;height:16px;"></span>
+                        Payments
+                    </button>
+                    <button class="nav-link text-start bg-transparent border-0 text-muted py-3" 
+                            data-bs-toggle="pill" data-bs-target="#shipping" type="button">
+                        <span data-feather="truck" class="me-2" style="width:16px;height:16px;"></span>
+                        Shipping & Delivery
+                    </button>
+                    <button class="nav-link text-start bg-transparent border-0 text-muted py-3" 
+                            data-bs-toggle="pill" data-bs-target="#authenticity" type="button">
+                        <span data-feather="shield" class="me-2" style="width:16px;height:16px;"></span>
+                        Authenticity
+                    </button>
+                    <button class="nav-link text-start bg-transparent border-0 text-muted py-3" 
+                            data-bs-toggle="pill" data-bs-target="#account" type="button">
+                        <span data-feather="user" class="me-2" style="width:16px;height:16px;"></span>
+                        Account & Security
+                    </button>
+                </div>
+            </div>
+            
+            <!-- FAQ Content -->
+            <div class="col-lg-9">
+                <div class="tab-content">
+                    <!-- Buying FAQs -->
+                    <div class="tab-pane fade show active" id="buying">
+                        <h4 class="text-primary mb-4">Buying on WatchBazaar</h4>
+                        <div class="accordion" id="buyingAccordion">
+                            <div class="accordion-item bg-dark border-0 mb-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button bg-dark text-light" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#buying1">
+                                        How do I place an order?
+                                    </button>
+                                </h2>
+                                <div id="buying1" class="accordion-collapse collapse show" data-bs-parent="#buyingAccordion">
+                                    <div class="accordion-body text-muted">
+                                        <p>Placing an order on WatchBazaar is simple:</p>
+                                        <ol>
+                                            <li>Browse our collection and select a watch you like</li>
+                                            <li>Click "Add to Cart" or "Make an Offer" for negotiable items</li>
+                                            <li>Proceed to checkout and fill in your shipping details</li>
+                                            <li>Choose your preferred payment method</li>
+                                            <li>Complete the payment and wait for your watch to arrive!</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item bg-dark border-0 mb-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-dark text-light" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#buying2">
+                                        Can I negotiate the price?
+                                    </button>
+                                </h2>
+                                <div id="buying2" class="accordion-collapse collapse" data-bs-parent="#buyingAccordion">
+                                    <div class="accordion-body text-muted">
+                                        Yes! Many listings on WatchBazaar accept offers. Look for the "Make an Offer" 
+                                        button on product pages. You can submit your offer and the seller will respond 
+                                        within 48 hours. Sellers can accept, reject, or counter your offer.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item bg-dark border-0 mb-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-dark text-light" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#buying3">
+                                        What is the return policy?
+                                    </button>
+                                </h2>
+                                <div id="buying3" class="accordion-collapse collapse" data-bs-parent="#buyingAccordion">
+                                    <div class="accordion-body text-muted">
+                                        We offer a 7-day return policy for all purchases. If you're not satisfied with 
+                                        your watch, you can return it within 7 days of delivery for a full refund, 
+                                        provided the watch is in its original condition. Return shipping costs may apply 
+                                        depending on the reason for return.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item bg-dark border-0 mb-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-dark text-light" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#buying4">
+                                        Can I meet the seller in person?
+                                    </button>
+                                </h2>
+                                <div id="buying4" class="accordion-collapse collapse" data-bs-parent="#buyingAccordion">
+                                    <div class="accordion-body text-muted">
+                                        Yes! We support in-person meetings for transactions. During checkout, you can 
+                                        select "In-Person Meeting" as your delivery method. Both parties will agree on 
+                                        a safe meeting location. We recommend meeting at public places like malls or 
+                                        authorized dealer showrooms.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Selling FAQs -->
+                    <div class="tab-pane fade" id="selling">
+                        <h4 class="text-primary mb-4">Selling on WatchBazaar</h4>
+                        <div class="accordion" id="sellingAccordion">
+                            <div class="accordion-item bg-dark border-0 mb-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button bg-dark text-light" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#selling1">
+                                        How do I become a seller?
+                                    </button>
+                                </h2>
+                                <div id="selling1" class="accordion-collapse collapse show" data-bs-parent="#sellingAccordion">
+                                    <div class="accordion-body text-muted">
+                                        <p>To become a seller on WatchBazaar:</p>
+                                        <ol>
+                                            <li>Create a buyer account first</li>
+                                            <li>Go to "Become a Seller" in your dashboard</li>
+                                            <li>Fill out the seller application form</li>
+                                            <li>Submit required documents (CNIC, business proof if applicable)</li>
+                                            <li>Wait for approval (usually 24-48 hours)</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item bg-dark border-0 mb-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-dark text-light" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#selling2">
+                                        What are the seller fees?
+                                    </button>
+                                </h2>
+                                <div id="selling2" class="accordion-collapse collapse" data-bs-parent="#sellingAccordion">
+                                    <div class="accordion-body text-muted">
+                                        WatchBazaar charges a competitive commission on successful sales:
+                                        <ul class="mt-2">
+                                            <li><strong>Standard Sellers:</strong> 5% commission</li>
+                                            <li><strong>Verified Sellers:</strong> 3.5% commission</li>
+                                            <li><strong>Premium Sellers:</strong> 2.5% commission</li>
+                                        </ul>
+                                        Listing watches is free. You only pay when you make a sale.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item bg-dark border-0 mb-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-dark text-light" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#selling3">
+                                        How long does listing approval take?
+                                    </button>
+                                </h2>
+                                <div id="selling3" class="accordion-collapse collapse" data-bs-parent="#sellingAccordion">
+                                    <div class="accordion-body text-muted">
+                                        New listings are typically reviewed within 24 hours. Our team verifies the 
+                                        information, images, and pricing before making your listing live. Premium 
+                                        and verified sellers may enjoy faster approval times.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Payments FAQs -->
+                    <div class="tab-pane fade" id="payments">
+                        <h4 class="text-primary mb-4">Payments</h4>
+                        <div class="accordion" id="paymentsAccordion">
+                            <div class="accordion-item bg-dark border-0 mb-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button bg-dark text-light" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#payment1">
+                                        What payment methods are accepted?
+                                    </button>
+                                </h2>
+                                <div id="payment1" class="accordion-collapse collapse show" data-bs-parent="#paymentsAccordion">
+                                    <div class="accordion-body text-muted">
+                                        We accept multiple payment methods for your convenience:
+                                        <ul class="mt-2">
+                                            <li>Bank Transfer (All major Pakistani banks)</li>
+                                            <li>JazzCash</li>
+                                            <li>EasyPaisa</li>
+                                            <li>Credit/Debit Cards (Visa, MasterCard)</li>
+                                            <li>Cash on Delivery (for orders under Rs. 100,000)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item bg-dark border-0 mb-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-dark text-light" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#payment2">
+                                        Is my payment secure?
+                                    </button>
+                                </h2>
+                                <div id="payment2" class="accordion-collapse collapse" data-bs-parent="#paymentsAccordion">
+                                    <div class="accordion-body text-muted">
+                                        Absolutely. We use industry-standard encryption and work with trusted payment 
+                                        partners. Your payment is held securely until you confirm receipt of your watch. 
+                                        This escrow-style system protects both buyers and sellers.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item bg-dark border-0 mb-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-dark text-light" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#payment3">
+                                        When do sellers get paid?
+                                    </button>
+                                </h2>
+                                <div id="payment3" class="accordion-collapse collapse" data-bs-parent="#paymentsAccordion">
+                                    <div class="accordion-body text-muted">
+                                        Sellers receive payment within 3 business days after the buyer confirms 
+                                        receipt of the watch, or automatically 7 days after delivery if no issues 
+                                        are reported. Payments are transferred directly to your registered bank account.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Shipping FAQs -->
+                    <div class="tab-pane fade" id="shipping">
+                        <h4 class="text-primary mb-4">Shipping & Delivery</h4>
+                        <div class="accordion" id="shippingAccordion">
+                            <div class="accordion-item bg-dark border-0 mb-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button bg-dark text-light" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#shipping1">
+                                        How long does delivery take?
+                                    </button>
+                                </h2>
+                                <div id="shipping1" class="accordion-collapse collapse show" data-bs-parent="#shippingAccordion">
+                                    <div class="accordion-body text-muted">
+                                        Delivery times vary by location:
+                                        <ul class="mt-2">
+                                            <li><strong>Major Cities (Karachi, Lahore, Islamabad):</strong> 2-3 business days</li>
+                                            <li><strong>Other Cities:</strong> 3-5 business days</li>
+                                            <li><strong>Remote Areas:</strong> 5-7 business days</li>
+                                        </ul>
+                                        You'll receive a tracking number once your order is dispatched.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item bg-dark border-0 mb-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-dark text-light" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#shipping2">
+                                        Is shipping insured?
+                                    </button>
+                                </h2>
+                                <div id="shipping2" class="accordion-collapse collapse" data-bs-parent="#shippingAccordion">
+                                    <div class="accordion-body text-muted">
+                                        Yes, all shipments are fully insured. We partner with trusted courier services 
+                                        who provide comprehensive insurance coverage. In the rare event of loss or 
+                                        damage during transit, you will receive a full refund.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Authenticity FAQs -->
+                    <div class="tab-pane fade" id="authenticity">
+                        <h4 class="text-primary mb-4">Authenticity & Verification</h4>
+                        <div class="accordion" id="authAccordion">
+                            <div class="accordion-item bg-dark border-0 mb-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button bg-dark text-light" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#auth1">
+                                        How do you ensure watches are authentic?
+                                    </button>
+                                </h2>
+                                <div id="auth1" class="accordion-collapse collapse show" data-bs-parent="#authAccordion">
+                                    <div class="accordion-body text-muted">
+                                        We have a multi-layer authentication process:
+                                        <ul class="mt-2">
+                                            <li>All sellers must provide documentation (box, papers, receipts)</li>
+                                            <li>High-value watches undergo expert verification</li>
+                                            <li>We partner with certified watch experts for authentication</li>
+                                            <li>Our buyer protection covers you if authenticity issues arise</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item bg-dark border-0 mb-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-dark text-light" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#auth2">
+                                        What if I receive a fake watch?
+                                    </button>
+                                </h2>
+                                <div id="auth2" class="accordion-collapse collapse" data-bs-parent="#authAccordion">
+                                    <div class="accordion-body text-muted">
+                                        This is extremely rare, but if it happens, you're fully protected. Report 
+                                        the issue within 7 days and we'll investigate. If the watch is found to be 
+                                        counterfeit, you'll receive a full refund and the seller will face permanent 
+                                        suspension from our platform.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Account FAQs -->
+                    <div class="tab-pane fade" id="account">
+                        <h4 class="text-primary mb-4">Account & Security</h4>
+                        <div class="accordion" id="accountAccordion">
+                            <div class="accordion-item bg-dark border-0 mb-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button bg-dark text-light" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#account1">
+                                        How do I reset my password?
+                                    </button>
+                                </h2>
+                                <div id="account1" class="accordion-collapse collapse show" data-bs-parent="#accountAccordion">
+                                    <div class="accordion-body text-muted">
+                                        Click "Forgot Password" on the login page, enter your registered email address, 
+                                        and we'll send you a secure link to reset your password. The link expires in 
+                                        24 hours for security purposes.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item bg-dark border-0 mb-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-dark text-light" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#account2">
+                                        How can I secure my account?
+                                    </button>
+                                </h2>
+                                <div id="account2" class="accordion-collapse collapse" data-bs-parent="#accountAccordion">
+                                    <div class="accordion-body text-muted">
+                                        We recommend these security practices:
+                                        <ul class="mt-2">
+                                            <li>Enable two-factor authentication (2FA)</li>
+                                            <li>Use a strong, unique password</li>
+                                            <li>Never share your login credentials</li>
+                                            <li>Log out from shared devices</li>
+                                            <li>Review your account activity regularly</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact CTA -->
+<section class="py-5" style="background:var(--wb-dark-secondary);">
+    <div class="container text-center">
+        <h4 class="text-light mb-3">Still have questions?</h4>
+        <p class="text-muted mb-4">Our support team is here to help you 24/7.</p>
+        <div class="d-flex gap-3 justify-content-center">
+            <a href="{% url 'contact' %}" class="btn btn-primary px-4">
+                <span data-feather="mail" style="width:16px;height:16px;" class="me-2"></span> Contact Us
+            </a>
+            <a href="https://wa.me/923001234567" class="btn btn-outline-light px-4" target="_blank">
+                <span data-feather="message-circle" style="width:16px;height:16px;" class="me-2"></span> WhatsApp
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // FAQ Search
+    document.getElementById('faqSearch').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        document.querySelectorAll('.accordion-item').forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(query) ? 'block' : 'none';
+        });
+    });
+    
+    // Style active tab
+    document.querySelectorAll('#faq-tabs .nav-link').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('#faq-tabs .nav-link').forEach(t => {
+                t.classList.remove('text-light');
+                t.classList.add('text-muted');
+            });
+            this.classList.remove('text-muted');
+            this.classList.add('text-light');
+        });
+    });
+</script>
+
+<style>
+    .accordion-button {
+        box-shadow: none !important;
+        border-radius: 8px !important;
+    }
+    .accordion-button:not(.collapsed) {
+        background: var(--wb-dark-secondary) !important;
+        color: var(--wb-primary) !important;
+    }
+    .accordion-button::after {
+        filter: brightness(0) invert(0.7);
+    }
+    .accordion-body {
+        background: var(--wb-dark-secondary);
+        border-radius: 0 0 8px 8px;
+    }
+</style>
+{% endblock %}

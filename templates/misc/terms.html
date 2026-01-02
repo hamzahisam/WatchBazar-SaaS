@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Terms & Conditions - WatchBazaar PK{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h1 class="display-5 fw-bold text-light mb-4">Terms & Conditions</h1>
+                <p class="text-muted mb-5">Last updated: {% now "F d, Y" %}</p>
+                
+                <div class="text-muted">
+                    <h5 class="text-light mt-4 mb-3">1. Acceptance of Terms</h5>
+                    <p>By accessing and using WatchBazaar PK, you agree to be bound by these Terms and Conditions.</p>
+                    
+                    <h5 class="text-light mt-4 mb-3">2. User Accounts</h5>
+                    <p>You are responsible for maintaining the confidentiality of your account and password.</p>
+                    
+                    <h5 class="text-light mt-4 mb-3">3. Buying & Selling</h5>
+                    <p>All transactions are subject to our buyer and seller protection policies.</p>
+                    
+                    <h5 class="text-light mt-4 mb-3">4. Prohibited Items</h5>
+                    <p>Counterfeit watches and fraudulent listings are strictly prohibited.</p>
+                    
+                    <h5 class="text-light mt-4 mb-3">5. Contact</h5>
+                    <p>For questions about these terms, contact us at legal@watchbazaar.pk</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

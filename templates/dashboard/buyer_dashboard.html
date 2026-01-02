@@ -1,0 +1,275 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}My Dashboard - WatchBazaar PK{% endblock %}
+
+{% block dashboard_title %}My Dashboard{% endblock %}
+
+{% block dashboard_content %}
+<!-- Welcome Message -->
+<div class="alert border-0 mb-4" style="background-color:rgba(198,169,97,0.1);">
+    <div class="d-flex align-items-center">
+        <div class="me-3">
+            <span data-feather="sun" style="width:24px;height:24px;color:var(--wb-primary);"></span>
+        </div>
+        <div>
+            <h6 class="text-light mb-1">Good {{ greeting }}, {{ user.first_name|default:user.username }}!</h6>
+            <p class="text-muted mb-0">Welcome back to your WatchBazaar dashboard.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-primary bg-opacity-10">
+                <span data-feather="heart" class="text-primary"></span>
+            </div>
+            <div>
+                <p class="stat-label">Wishlist</p>
+                <h3 class="stat-value">{{ wishlist_count }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-info bg-opacity-10">
+                <span data-feather="send" class="text-info"></span>
+            </div>
+            <div>
+                <p class="stat-label">Active Offers</p>
+                <h3 class="stat-value">{{ active_offers_count }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-warning bg-opacity-10">
+                <span data-feather="shopping-bag" class="text-warning"></span>
+            </div>
+            <div>
+                <p class="stat-label">Orders</p>
+                <h3 class="stat-value">{{ orders_count }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-success bg-opacity-10">
+                <span data-feather="bell" class="text-success"></span>
+            </div>
+            <div>
+                <p class="stat-label">Notifications</p>
+                <h3 class="stat-value">{{ notifications_count }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Left Column -->
+    <div class="col-lg-8">
+        <!-- Pending Actions -->
+        {% if pending_actions %}
+        <div class="card bg-dark border-0 mb-4">
+            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                <h6 class="text-light mb-0">
+                    <span data-feather="alert-circle" style="width:18px;height:18px;color:var(--wb-primary);" class="me-2"></span>
+                    Pending Actions
+                </h6>
+            </div>
+            <div class="card-body pt-0">
+                {% for action in pending_actions %}
+                <div class="d-flex align-items-center py-3 {% if not forloop.last %}border-bottom border-secondary{% endif %}">
+                    <div class="me-3" style="width:40px;height:40px;background-color:{% if action.type == 'counter' %}rgba(198,169,97,0.2){% elif action.type == 'payment' %}rgba(220,53,69,0.2){% else %}rgba(23,162,184,0.2){% endif %};border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <span data-feather="{{ action.icon }}" style="width:18px;height:18px;color:{% if action.type == 'counter' %}var(--wb-primary){% elif action.type == 'payment' %}#dc3545{% else %}#17a2b8{% endif %};"></span>
+                    </div>
+                    <div class="flex-grow-1">
+                        <p class="text-light mb-1">{{ action.message }}</p>
+                        <small class="text-muted">{{ action.time }}</small>
+                    </div>
+                    <a href="{{ action.url }}" class="btn btn-sm btn-outline-primary">
+                        {{ action.action_text }}
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Recent Orders -->
+        <div class="card bg-dark border-0 mb-4">
+            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                <h6 class="text-light mb-0">
+                    <span data-feather="shopping-bag" style="width:18px;height:18px;color:var(--wb-primary);" class="me-2"></span>
+                    Recent Orders
+                </h6>
+                <a href="{% url 'my_orders' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body pt-0">
+                {% if recent_orders %}
+                {% for order in recent_orders %}
+                <div class="d-flex align-items-center py-3 {% if not forloop.last %}border-bottom border-secondary{% endif %}">
+                    <div class="me-3">
+                        <img src="{{ order.items.first.watch.primary_image.url }}" 
+                             style="width:50px;height:50px;object-fit:cover;border-radius:8px;" alt="">
+                    </div>
+                    <div class="flex-grow-1">
+                        <a href="{% url 'order_detail' order.id %}" class="text-light text-decoration-none">
+                            Order #{{ order.order_number }}
+                        </a>
+                        <p class="text-muted small mb-0">{{ order.created_at|date:"M d, Y" }}</p>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge 
+                            {% if order.status == 'pending' %}bg-warning text-dark
+                            {% elif order.status == 'confirmed' %}bg-info
+                            {% elif order.status == 'completed' %}bg-success
+                            {% elif order.status == 'cancelled' %}bg-danger
+                            {% else %}bg-secondary{% endif %}">
+                            {{ order.status|title }}
+                        </span>
+                        <p class="text-primary small mb-0 mt-1">Rs. {{ order.total|floatformat:0|intcomma }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-4">
+                    <span data-feather="shopping-bag" style="width:40px;height:40px;color:#444;" class="mb-3"></span>
+                    <p class="text-muted mb-0">No orders yet</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Active Offers -->
+        <div class="card bg-dark border-0">
+            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                <h6 class="text-light mb-0">
+                    <span data-feather="tag" style="width:18px;height:18px;color:var(--wb-primary);" class="me-2"></span>
+                    My Active Offers
+                </h6>
+                <a href="{% url 'my_offers' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body pt-0">
+                {% if active_offers %}
+                {% for offer in active_offers %}
+                <div class="d-flex align-items-center py-3 {% if not forloop.last %}border-bottom border-secondary{% endif %}">
+                    <div class="me-3">
+                        <img src="{{ offer.watch.primary_image.url }}" 
+                             style="width:50px;height:50px;object-fit:cover;border-radius:8px;" alt="">
+                    </div>
+                    <div class="flex-grow-1">
+                        <a href="{% url 'watch_detail' offer.watch.id %}" class="text-light text-decoration-none">
+                            {{ offer.watch.brand }} {{ offer.watch.model }}
+                        </a>
+                        <p class="text-muted small mb-0">Offer: Rs. {{ offer.amount|floatformat:0|intcomma }}</p>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge 
+                            {% if offer.status == 'pending' %}bg-warning text-dark
+                            {% elif offer.status == 'countered' %}bg-primary{% endif %}">
+                            {{ offer.status|title }}
+                        </span>
+                        {% if offer.status == 'countered' %}
+                        <p class="text-primary small mb-0 mt-1">Counter: Rs. {{ offer.counter_amount|floatformat:0|intcomma }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-4">
+                    <span data-feather="tag" style="width:40px;height:40px;color:#444;" class="mb-3"></span>
+                    <p class="text-muted mb-0">No active offers</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Column -->
+    <div class="col-lg-4 mt-4 mt-lg-0">
+        <!-- Quick Actions -->
+        <div class="card bg-dark border-0 mb-4">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="text-light mb-0">Quick Actions</h6>
+            </div>
+            <div class="card-body pt-0">
+                <a href="{% url 'watch_list' %}" class="btn btn-outline-primary w-100 mb-2 text-start">
+                    <span data-feather="search" style="width:16px;height:16px;" class="me-2"></span> Browse Watches
+                </a>
+                <a href="{% url 'wishlist' %}" class="btn btn-outline-light w-100 mb-2 text-start">
+                    <span data-feather="heart" style="width:16px;height:16px;" class="me-2"></span> My Wishlist
+                </a>
+                <a href="{% url 'cart' %}" class="btn btn-outline-light w-100 mb-2 text-start">
+                    <span data-feather="shopping-cart" style="width:16px;height:16px;" class="me-2"></span> Shopping Cart
+                </a>
+                <a href="{% url 'messages' %}" class="btn btn-outline-light w-100 text-start">
+                    <span data-feather="message-circle" style="width:16px;height:16px;" class="me-2"></span> Messages
+                </a>
+            </div>
+        </div>
+        
+        <!-- Wishlist Preview -->
+        <div class="card bg-dark border-0 mb-4">
+            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                <h6 class="text-light mb-0">
+                    <span data-feather="heart" style="width:18px;height:18px;color:var(--wb-primary);" class="me-2"></span>
+                    Wishlist
+                </h6>
+                <a href="{% url 'wishlist' %}" class="text-primary small">View All</a>
+            </div>
+            <div class="card-body pt-0">
+                {% if wishlist_items %}
+                {% for item in wishlist_items|slice:":3" %}
+                <div class="d-flex align-items-center py-2 {% if not forloop.last %}border-bottom border-secondary{% endif %}">
+                    <img src="{{ item.watch.primary_image.url }}" 
+                         style="width:40px;height:40px;object-fit:cover;border-radius:6px;" class="me-3" alt="">
+                    <div class="flex-grow-1">
+                        <p class="text-light small mb-0">{{ item.watch.brand }} {{ item.watch.model }}</p>
+                        <p class="text-primary small mb-0">Rs. {{ item.watch.price|floatformat:0|intcomma }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-3">
+                    <p class="text-muted small mb-0">Your wishlist is empty</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Recently Viewed -->
+        <div class="card bg-dark border-0">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="text-light mb-0">
+                    <span data-feather="eye" style="width:18px;height:18px;color:var(--wb-primary);" class="me-2"></span>
+                    Recently Viewed
+                </h6>
+            </div>
+            <div class="card-body pt-0">
+                {% if recently_viewed %}
+                {% for watch in recently_viewed|slice:":4" %}
+                <div class="d-flex align-items-center py-2 {% if not forloop.last %}border-bottom border-secondary{% endif %}">
+                    <img src="{{ watch.primary_image.url }}" 
+                         style="width:40px;height:40px;object-fit:cover;border-radius:6px;" class="me-3" alt="">
+                    <div class="flex-grow-1">
+                        <a href="{% url 'watch_detail' watch.id %}" class="text-light small text-decoration-none">
+                            {{ watch.brand }} {{ watch.model }}
+                        </a>
+                        <p class="text-primary small mb-0">Rs. {{ watch.price|floatformat:0|intcomma }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-3">
+                    <p class="text-muted small mb-0">No recently viewed items</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

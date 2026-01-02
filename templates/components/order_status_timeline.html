@@ -1,0 +1,267 @@
+{% comment %}
+Order Status Timeline Component
+Usage: {% include 'components/order_status_timeline.html' with order=order %}
+
+Expects:
+- order: Order object with status field
+- Optional: vertical (boolean, default false for horizontal)
+- Optional: show_dates (boolean, default true)
+{% endcomment %}
+
+{% load humanize %}
+
+{% with vertical=vertical|default:False show_dates=show_dates|default:True %}
+
+{% if vertical %}
+{# Vertical Timeline #}
+<div class="order-timeline-vertical">
+    {# Order Placed #}
+    <div class="timeline-step {% if order.status in 'pending,confirmed,processing,shipped,delivered' %}completed{% endif %}">
+        <div class="timeline-marker {% if order.status in 'pending,confirmed,processing,shipped,delivered' %}bg-success{% else %}bg-secondary{% endif %}">
+            <span data-feather="check" style="width:12px;height:12px;color:#fff;"></span>
+        </div>
+        <div class="timeline-content">
+            <h6 class="text-light mb-1">Order Placed</h6>
+            {% if show_dates and order.created_at %}
+            <small class="text-muted">{{ order.created_at|date:"M d, Y h:i A" }}</small>
+            {% endif %}
+        </div>
+    </div>
+    
+    {# Payment Confirmed #}
+    <div class="timeline-step {% if order.status in 'confirmed,processing,shipped,delivered' %}completed{% elif order.status == 'pending' %}current{% endif %}">
+        <div class="timeline-marker {% if order.status in 'confirmed,processing,shipped,delivered' %}bg-success{% elif order.status == 'pending' %}bg-warning{% else %}bg-secondary{% endif %}">
+            {% if order.status in 'confirmed,processing,shipped,delivered' %}
+            <span data-feather="check" style="width:12px;height:12px;color:#fff;"></span>
+            {% else %}
+            <span data-feather="clock" style="width:12px;height:12px;color:#000;"></span>
+            {% endif %}
+        </div>
+        <div class="timeline-content">
+            <h6 class="text-light mb-1">Payment Confirmed</h6>
+            {% if show_dates and order.paid_at %}
+            <small class="text-muted">{{ order.paid_at|date:"M d, Y h:i A" }}</small>
+            {% elif order.status == 'pending' %}
+            <small class="text-warning">Awaiting payment</small>
+            {% endif %}
+        </div>
+    </div>
+    
+    {# Processing #}
+    <div class="timeline-step {% if order.status in 'processing,shipped,delivered' %}completed{% elif order.status == 'confirmed' %}current{% endif %}">
+        <div class="timeline-marker {% if order.status in 'processing,shipped,delivered' %}bg-success{% elif order.status == 'confirmed' %}bg-info{% else %}bg-secondary{% endif %}">
+            {% if order.status in 'processing,shipped,delivered' %}
+            <span data-feather="check" style="width:12px;height:12px;color:#fff;"></span>
+            {% else %}
+            <span data-feather="package" style="width:12px;height:12px;color:#fff;"></span>
+            {% endif %}
+        </div>
+        <div class="timeline-content">
+            <h6 class="text-light mb-1">Processing</h6>
+            {% if show_dates and order.processing_at %}
+            <small class="text-muted">{{ order.processing_at|date:"M d, Y h:i A" }}</small>
+            {% elif order.status == 'confirmed' %}
+            <small class="text-info">Preparing your order</small>
+            {% endif %}
+        </div>
+    </div>
+    
+    {# Shipped #}
+    <div class="timeline-step {% if order.status in 'shipped,delivered' %}completed{% elif order.status == 'processing' %}current{% endif %}">
+        <div class="timeline-marker {% if order.status in 'shipped,delivered' %}bg-success{% elif order.status == 'processing' %}bg-info{% else %}bg-secondary{% endif %}">
+            {% if order.status in 'shipped,delivered' %}
+            <span data-feather="check" style="width:12px;height:12px;color:#fff;"></span>
+            {% else %}
+            <span data-feather="truck" style="width:12px;height:12px;color:#fff;"></span>
+            {% endif %}
+        </div>
+        <div class="timeline-content">
+            <h6 class="text-light mb-1">Shipped</h6>
+            {% if show_dates and order.shipped_at %}
+            <small class="text-muted">{{ order.shipped_at|date:"M d, Y h:i A" }}</small>
+            {% if order.tracking_number %}
+            <br><small class="text-primary">Tracking: {{ order.tracking_number }}</small>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    
+    {# Delivered #}
+    <div class="timeline-step {% if order.status == 'delivered' %}completed{% elif order.status == 'shipped' %}current{% endif %}">
+        <div class="timeline-marker {% if order.status == 'delivered' %}bg-success{% elif order.status == 'shipped' %}bg-info{% else %}bg-secondary{% endif %}">
+            {% if order.status == 'delivered' %}
+            <span data-feather="check-circle" style="width:12px;height:12px;color:#fff;"></span>
+            {% else %}
+            <span data-feather="home" style="width:12px;height:12px;color:#fff;"></span>
+            {% endif %}
+        </div>
+        <div class="timeline-content">
+            <h6 class="text-light mb-1">Delivered</h6>
+            {% if show_dates and order.delivered_at %}
+            <small class="text-muted">{{ order.delivered_at|date:"M d, Y h:i A" }}</small>
+            {% elif order.estimated_delivery %}
+            <small class="text-muted">Expected: {{ order.estimated_delivery|date:"M d, Y" }}</small>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .order-timeline-vertical {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .order-timeline-vertical .timeline-step {
+        position: relative;
+        padding-bottom: 24px;
+    }
+    
+    .order-timeline-vertical .timeline-step:last-child {
+        padding-bottom: 0;
+    }
+    
+    .order-timeline-vertical .timeline-step::before {
+        content: '';
+        position: absolute;
+        left: -22px;
+        top: 24px;
+        bottom: 0;
+        width: 2px;
+        background: #333;
+    }
+    
+    .order-timeline-vertical .timeline-step.completed::before {
+        background: #28a745;
+    }
+    
+    .order-timeline-vertical .timeline-step:last-child::before {
+        display: none;
+    }
+    
+    .order-timeline-vertical .timeline-marker {
+        position: absolute;
+        left: -30px;
+        top: 2px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+{% else %}
+{# Horizontal Timeline #}
+<div class="order-timeline-horizontal">
+    <div class="d-flex justify-content-between position-relative">
+        {# Progress Bar #}
+        <div class="timeline-progress-bar" 
+             style="width: {% if order.status == 'pending' %}0%{% elif order.status == 'confirmed' %}25%{% elif order.status == 'processing' %}50%{% elif order.status == 'shipped' %}75%{% elif order.status == 'delivered' %}100%{% else %}0%{% endif %};"></div>
+        
+        {# Order Placed #}
+        <div class="timeline-step text-center {% if order.status in 'pending,confirmed,processing,shipped,delivered' %}completed{% endif %}">
+            <div class="timeline-marker mx-auto mb-2 {% if order.status in 'pending,confirmed,processing,shipped,delivered' %}bg-success{% else %}bg-secondary{% endif %}">
+                <span data-feather="shopping-cart" style="width:16px;height:16px;color:#fff;"></span>
+            </div>
+            <p class="text-light small mb-0">Order Placed</p>
+            {% if show_dates and order.created_at %}
+            <small class="text-muted">{{ order.created_at|date:"M d" }}</small>
+            {% endif %}
+        </div>
+        
+        {# Payment Confirmed #}
+        <div class="timeline-step text-center {% if order.status in 'confirmed,processing,shipped,delivered' %}completed{% endif %}">
+            <div class="timeline-marker mx-auto mb-2 {% if order.status in 'confirmed,processing,shipped,delivered' %}bg-success{% elif order.status == 'pending' %}bg-warning{% else %}bg-secondary{% endif %}">
+                <span data-feather="credit-card" style="width:16px;height:16px;color:{% if order.status == 'pending' %}#000{% else %}#fff{% endif %};"></span>
+            </div>
+            <p class="{% if order.status == 'pending' %}text-warning{% else %}text-light{% endif %} small mb-0">Payment</p>
+            {% if show_dates and order.paid_at %}
+            <small class="text-muted">{{ order.paid_at|date:"M d" }}</small>
+            {% endif %}
+        </div>
+        
+        {# Processing #}
+        <div class="timeline-step text-center {% if order.status in 'processing,shipped,delivered' %}completed{% endif %}">
+            <div class="timeline-marker mx-auto mb-2 {% if order.status in 'processing,shipped,delivered' %}bg-success{% elif order.status == 'confirmed' %}bg-info{% else %}bg-secondary{% endif %}">
+                <span data-feather="package" style="width:16px;height:16px;color:#fff;"></span>
+            </div>
+            <p class="{% if order.status == 'confirmed' %}text-info{% else %}text-light{% endif %} small mb-0">Processing</p>
+            {% if show_dates and order.processing_at %}
+            <small class="text-muted">{{ order.processing_at|date:"M d" }}</small>
+            {% endif %}
+        </div>
+        
+        {# Shipped #}
+        <div class="timeline-step text-center {% if order.status in 'shipped,delivered' %}completed{% endif %}">
+            <div class="timeline-marker mx-auto mb-2 {% if order.status in 'shipped,delivered' %}bg-success{% elif order.status == 'processing' %}bg-info{% else %}bg-secondary{% endif %}">
+                <span data-feather="truck" style="width:16px;height:16px;color:#fff;"></span>
+            </div>
+            <p class="{% if order.status == 'processing' %}text-info{% else %}text-light{% endif %} small mb-0">Shipped</p>
+            {% if show_dates and order.shipped_at %}
+            <small class="text-muted">{{ order.shipped_at|date:"M d" }}</small>
+            {% endif %}
+        </div>
+        
+        {# Delivered #}
+        <div class="timeline-step text-center {% if order.status == 'delivered' %}completed{% endif %}">
+            <div class="timeline-marker mx-auto mb-2 {% if order.status == 'delivered' %}bg-success{% elif order.status == 'shipped' %}bg-info{% else %}bg-secondary{% endif %}">
+                <span data-feather="check-circle" style="width:16px;height:16px;color:#fff;"></span>
+            </div>
+            <p class="{% if order.status == 'shipped' %}text-info{% else %}text-light{% endif %} small mb-0">Delivered</p>
+            {% if show_dates and order.delivered_at %}
+            <small class="text-muted">{{ order.delivered_at|date:"M d" }}</small>
+            {% elif order.estimated_delivery and order.status != 'delivered' %}
+            <small class="text-muted">Est. {{ order.estimated_delivery|date:"M d" }}</small>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .order-timeline-horizontal {
+        position: relative;
+        padding: 0 20px;
+    }
+    
+    .order-timeline-horizontal::before {
+        content: '';
+        position: absolute;
+        left: 40px;
+        right: 40px;
+        top: 18px;
+        height: 3px;
+        background: #333;
+        z-index: 0;
+    }
+    
+    .timeline-progress-bar {
+        position: absolute;
+        left: 40px;
+        top: 18px;
+        height: 3px;
+        background: linear-gradient(90deg, #28a745, var(--wb-primary));
+        z-index: 1;
+        transition: width 0.5s ease;
+    }
+    
+    .order-timeline-horizontal .timeline-step {
+        position: relative;
+        z-index: 2;
+        flex: 1;
+    }
+    
+    .order-timeline-horizontal .timeline-marker {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid var(--wb-dark);
+    }
+</style>
+{% endif %}
+
+{% endwith %}

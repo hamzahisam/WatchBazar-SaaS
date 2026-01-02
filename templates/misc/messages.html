@@ -1,0 +1,323 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Messages - WatchBazaar PK{% endblock %}
+
+{% block dashboard_title %}Messages{% endblock %}
+
+{% block dashboard_content %}
+<div class="row g-0" style="height:calc(100vh - 200px);min-height:500px;">
+    <!-- Conversations List -->
+    <div class="col-md-4 col-lg-3 border-end border-secondary">
+        <div class="p-3 border-bottom border-secondary">
+            <div class="position-relative">
+                <input type="text" class="form-control bg-dark border-secondary text-light ps-5" 
+                       id="searchConversations" placeholder="Search messages...">
+                <span data-feather="search" class="position-absolute text-muted" 
+                      style="left:15px;top:50%;transform:translateY(-50%);width:16px;height:16px;"></span>
+            </div>
+        </div>
+        
+        <div class="conversations-list" style="height:calc(100% - 70px);overflow-y:auto;">
+            {% for conversation in conversations %}
+            <a href="?conversation={{ conversation.id }}" 
+               class="d-block p-3 text-decoration-none border-bottom border-secondary conversation-item 
+                      {% if active_conversation.id == conversation.id %}active{% endif %}"
+               style="{% if active_conversation.id == conversation.id %}background:var(--wb-dark-secondary);{% endif %}">
+                <div class="d-flex align-items-start">
+                    <div class="position-relative me-3">
+                        <img src="{{ conversation.other_user.avatar.url|default:'/static/assets/img/default-avatar.png' }}" 
+                             alt="{{ conversation.other_user.username }}"
+                             style="width:48px;height:48px;border-radius:50%;object-fit:cover;">
+                        {% if conversation.other_user.is_online %}
+                        <span class="position-absolute bg-success rounded-circle" 
+                              style="width:12px;height:12px;bottom:0;right:0;border:2px solid var(--wb-dark);"></span>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="text-light mb-0 text-truncate">{{ conversation.other_user.full_name }}</h6>
+                            <small class="text-muted flex-shrink-0 ms-2">{{ conversation.last_message_at|timesince }}</small>
+                        </div>
+                        {% if conversation.watch %}
+                        <p class="text-primary small mb-1 text-truncate">
+                            Re: {{ conversation.watch.brand }} {{ conversation.watch.model }}
+                        </p>
+                        {% endif %}
+                        <p class="text-muted small mb-0 text-truncate">
+                            {% if conversation.last_message.sender == request.user %}You: {% endif %}
+                            {{ conversation.last_message.content|truncatechars:50 }}
+                        </p>
+                    </div>
+                    {% if conversation.unread_count > 0 %}
+                    <span class="badge bg-primary rounded-pill ms-2">{{ conversation.unread_count }}</span>
+                    {% endif %}
+                </div>
+            </a>
+            {% empty %}
+            <div class="text-center py-5">
+                <span data-feather="message-circle" class="text-muted mb-3" style="width:48px;height:48px;"></span>
+                <p class="text-muted mb-0">No conversations yet</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Chat Area -->
+    <div class="col-md-8 col-lg-9 d-flex flex-column">
+        {% if active_conversation %}
+        <!-- Chat Header -->
+        <div class="p-3 border-bottom border-secondary d-flex align-items-center">
+            <button class="btn btn-link text-light d-md-none me-2 p-0" onclick="history.back()">
+                <span data-feather="arrow-left" style="width:20px;height:20px;"></span>
+            </button>
+            <img src="{{ active_conversation.other_user.avatar.url|default:'/static/assets/img/default-avatar.png' }}" 
+                 alt="{{ active_conversation.other_user.username }}"
+                 style="width:40px;height:40px;border-radius:50%;object-fit:cover;" class="me-3">
+            <div class="flex-grow-1">
+                <h6 class="text-light mb-0">{{ active_conversation.other_user.full_name }}</h6>
+                {% if active_conversation.watch %}
+                <small class="text-primary">{{ active_conversation.watch.brand }} {{ active_conversation.watch.model }}</small>
+                {% else %}
+                <small class="text-muted">
+                    {% if active_conversation.other_user.is_online %}Online{% else %}Last seen {{ active_conversation.other_user.last_seen|timesince }} ago{% endif %}
+                </small>
+                {% endif %}
+            </div>
+            <div class="dropdown">
+                <button class="btn btn-link text-muted p-0" data-bs-toggle="dropdown">
+                    <span data-feather="more-vertical" style="width:20px;height:20px;"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end bg-dark border-secondary">
+                    {% if active_conversation.watch %}
+                    <li><a class="dropdown-item text-light" href="{% url 'watch_detail' active_conversation.watch.id %}">View Watch</a></li>
+                    {% endif %}
+                    <li><a class="dropdown-item text-light" href="#">View Profile</a></li>
+                    <li><hr class="dropdown-divider border-secondary"></li>
+                    <li><a class="dropdown-item text-danger" href="#" onclick="blockUser({{ active_conversation.other_user.id }})">Block User</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Watch Context (if applicable) -->
+        {% if active_conversation.watch %}
+        <div class="p-3 border-bottom border-secondary" style="background:var(--wb-dark-secondary);">
+            <div class="d-flex align-items-center">
+                <img src="{{ active_conversation.watch.primary_image.url }}" 
+                     alt="{{ active_conversation.watch.model }}"
+                     style="width:50px;height:50px;border-radius:6px;object-fit:cover;" class="me-3">
+                <div class="flex-grow-1">
+                    <p class="text-light mb-0">{{ active_conversation.watch.brand }} {{ active_conversation.watch.model }}</p>
+                    <p class="text-primary mb-0">Rs. {{ active_conversation.watch.price|floatformat:0|intcomma }}</p>
+                </div>
+                <a href="{% url 'watch_detail' active_conversation.watch.id %}" class="btn btn-sm btn-outline-primary">
+                    View Listing
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Messages -->
+        <div class="flex-grow-1 p-3" id="messagesContainer" style="overflow-y:auto;">
+            {% regroup messages by created_at|date:"Y-m-d" as messages_by_date %}
+            {% for date_group in messages_by_date %}
+            <div class="text-center my-3">
+                <span class="badge bg-dark text-muted px-3 py-2">{{ date_group.grouper|date:"M d, Y" }}</span>
+            </div>
+            
+            {% for message in date_group.list %}
+            <div class="d-flex mb-3 {% if message.sender == request.user %}justify-content-end{% endif %}">
+                {% if message.sender != request.user %}
+                <img src="{{ message.sender.avatar.url|default:'/static/assets/img/default-avatar.png' }}" 
+                     alt="{{ message.sender.username }}"
+                     style="width:32px;height:32px;border-radius:50%;object-fit:cover;" class="me-2 mt-1">
+                {% endif %}
+                
+                <div style="max-width:70%;">
+                    <div class="p-3 rounded-3 {% if message.sender == request.user %}bg-primary text-dark{% else %}bg-dark{% endif %}">
+                        {% if message.attachment %}
+                        <div class="mb-2">
+                            {% if message.attachment_type == 'image' %}
+                            <img src="{{ message.attachment.url }}" alt="Attachment" 
+                                 class="img-fluid rounded" style="max-width:200px;">
+                            {% else %}
+                            <a href="{{ message.attachment.url }}" class="btn btn-sm btn-outline-light" download>
+                                <span data-feather="file" style="width:14px;height:14px;"></span>
+                                {{ message.attachment_name }}
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        <p class="mb-0 {% if message.sender == request.user %}text-dark{% else %}text-light{% endif %}">
+                            {{ message.content }}
+                        </p>
+                    </div>
+                    <div class="d-flex align-items-center mt-1 {% if message.sender == request.user %}justify-content-end{% endif %}">
+                        <small class="text-muted">{{ message.created_at|time:"g:i A" }}</small>
+                        {% if message.sender == request.user %}
+                        <span class="ms-2">
+                            {% if message.is_read %}
+                            <span data-feather="check-circle" class="text-primary" style="width:12px;height:12px;"></span>
+                            {% else %}
+                            <span data-feather="check" class="text-muted" style="width:12px;height:12px;"></span>
+                            {% endif %}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endfor %}
+        </div>
+        
+        <!-- Message Input -->
+        <div class="p-3 border-top border-secondary">
+            <form id="messageForm" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="d-flex align-items-end gap-2">
+                    <button type="button" class="btn btn-link text-muted p-2" onclick="document.getElementById('attachmentInput').click()">
+                        <span data-feather="paperclip" style="width:20px;height:20px;"></span>
+                    </button>
+                    <input type="file" id="attachmentInput" name="attachment" class="d-none" 
+                           accept="image/*,.pdf,.doc,.docx">
+                    
+                    <div class="flex-grow-1">
+                        <div id="attachmentPreview" class="mb-2 d-none">
+                            <div class="d-inline-flex align-items-center bg-dark rounded px-3 py-2">
+                                <span data-feather="file" style="width:14px;height:14px;" class="text-primary me-2"></span>
+                                <span class="text-light small" id="attachmentName"></span>
+                                <button type="button" class="btn btn-link text-muted p-0 ms-2" onclick="removeAttachment()">
+                                    <span data-feather="x" style="width:14px;height:14px;"></span>
+                                </button>
+                            </div>
+                        </div>
+                        <textarea class="form-control bg-dark border-secondary text-light" 
+                                  name="content" id="messageInput" rows="1" 
+                                  placeholder="Type a message..." style="resize:none;"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary px-3">
+                        <span data-feather="send" style="width:18px;height:18px;"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        {% else %}
+        <!-- No Conversation Selected -->
+        <div class="flex-grow-1 d-flex align-items-center justify-content-center">
+            <div class="text-center">
+                <div class="mx-auto mb-4" 
+                     style="width:100px;height:100px;background:rgba(198,169,97,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                    <span data-feather="message-circle" class="text-primary" style="width:48px;height:48px;"></span>
+                </div>
+                <h5 class="text-light mb-2">Select a Conversation</h5>
+                <p class="text-muted">Choose a conversation from the list to start messaging.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .conversation-item:hover {
+        background: var(--wb-dark-secondary);
+    }
+    
+    #messageInput {
+        max-height: 120px;
+        overflow-y: auto;
+    }
+    
+    @media (max-width: 767px) {
+        .conversations-list {
+            height: 100% !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-scroll to bottom of messages
+    const messagesContainer = document.getElementById('messagesContainer');
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // Auto-resize textarea
+    const messageInput = document.getElementById('messageInput');
+    if (messageInput) {
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+        
+        // Send on Enter (Shift+Enter for new line)
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('messageForm').submit();
+            }
+        });
+    }
+    
+    // Attachment handling
+    document.getElementById('attachmentInput')?.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            document.getElementById('attachmentName').textContent = this.files[0].name;
+            document.getElementById('attachmentPreview').classList.remove('d-none');
+        }
+    });
+    
+    function removeAttachment() {
+        document.getElementById('attachmentInput').value = '';
+        document.getElementById('attachmentPreview').classList.add('d-none');
+    }
+    
+    // Search conversations
+    document.getElementById('searchConversations')?.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        document.querySelectorAll('.conversation-item').forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(query) ? 'block' : 'none';
+        });
+    });
+    
+    function blockUser(userId) {
+        if (confirm('Are you sure you want to block this user? You will no longer receive messages from them.')) {
+            fetch(`/api/users/${userId}/block/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '{% url "messages" %}';
+                }
+            });
+        }
+    }
+    
+    // Poll for new messages (simple implementation)
+    {% if active_conversation %}
+    setInterval(function() {
+        // In production, use WebSockets instead
+        fetch(`/api/conversations/{{ active_conversation.id }}/new-messages/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.has_new_messages) {
+                location.reload();
+            }
+        });
+    }, 10000);
+    {% endif %}
+</script>
+{% endblock %}

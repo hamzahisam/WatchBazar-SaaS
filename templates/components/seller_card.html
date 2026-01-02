@@ -1,0 +1,135 @@
+{% comment %}
+Seller Info Card Component
+Usage: {% include 'components/seller_card.html' with seller=seller %}
+
+Expects:
+- seller: Seller/Profile object with store info
+- Optional: show_contact (boolean, default false)
+- Optional: compact (boolean, default false)
+{% endcomment %}
+
+{% load humanize %}
+
+{% with show_contact=show_contact|default:False compact=compact|default:False %}
+
+{% if compact %}
+{# Compact Version - For listings #}
+<div class="d-flex align-items-center">
+    <img src="{{ seller.logo.url|default:'/static/assets/img/default-store.png' }}" 
+         alt="{{ seller.store_name }}"
+         style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid {% if seller.is_verified %}var(--wb-primary){% else %}#333{% endif %};" 
+         class="me-2">
+    <div>
+        <div class="d-flex align-items-center">
+            <span class="text-light small">{{ seller.store_name }}</span>
+            {% if seller.is_verified %}
+            <span class="ms-1" title="Verified Seller">
+                <span data-feather="check-circle" class="text-primary" style="width:14px;height:14px;"></span>
+            </span>
+            {% endif %}
+        </div>
+        {% if seller.rating %}
+        <div class="d-flex align-items-center">
+            <span class="text-warning me-1" style="font-size:10px;">★</span>
+            <span class="text-muted small">{{ seller.rating|floatformat:1 }} ({{ seller.review_count }})</span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% else %}
+{# Full Card Version #}
+<div class="card bg-dark border-0">
+    <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+            <img src="{{ seller.logo.url|default:'/static/assets/img/default-store.png' }}" 
+                 alt="{{ seller.store_name }}"
+                 style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:3px solid {% if seller.is_verified %}var(--wb-primary){% else %}#333{% endif %};" 
+                 class="me-3">
+            <div>
+                <div class="d-flex align-items-center mb-1">
+                    <h6 class="text-light mb-0">{{ seller.store_name }}</h6>
+                    {% if seller.is_verified %}
+                    <span class="badge bg-primary text-dark ms-2">
+                        <span data-feather="check" style="width:10px;height:10px;"></span> Verified
+                    </span>
+                    {% endif %}
+                </div>
+                {% if seller.city %}
+                <p class="text-muted small mb-0">
+                    <span data-feather="map-pin" style="width:12px;height:12px;"></span>
+                    {{ seller.city }}{% if seller.country %}, {{ seller.country }}{% endif %}
+                </p>
+                {% endif %}
+            </div>
+        </div>
+        
+        {# Stats #}
+        <div class="row g-2 mb-3">
+            <div class="col-4 text-center">
+                <p class="text-primary mb-0 fw-bold">{{ seller.listings_count|default:0 }}</p>
+                <small class="text-muted">Listings</small>
+            </div>
+            <div class="col-4 text-center border-start border-secondary">
+                <p class="text-primary mb-0 fw-bold">{{ seller.sales_count|default:0 }}</p>
+                <small class="text-muted">Sales</small>
+            </div>
+            <div class="col-4 text-center border-start border-secondary">
+                {% if seller.rating %}
+                <p class="text-primary mb-0 fw-bold">{{ seller.rating|floatformat:1 }} ★</p>
+                <small class="text-muted">{{ seller.review_count }} reviews</small>
+                {% else %}
+                <p class="text-muted mb-0">—</p>
+                <small class="text-muted">No reviews</small>
+                {% endif %}
+            </div>
+        </div>
+        
+        {# Member Since #}
+        <p class="text-muted small mb-3">
+            <span data-feather="calendar" style="width:12px;height:12px;"></span>
+            Member since {{ seller.created_at|date:"M Y" }}
+        </p>
+        
+        {# Response Rate #}
+        {% if seller.response_rate %}
+        <div class="mb-3">
+            <div class="d-flex justify-content-between small mb-1">
+                <span class="text-muted">Response Rate</span>
+                <span class="text-light">{{ seller.response_rate }}%</span>
+            </div>
+            <div class="progress" style="height:4px;background:#333;">
+                <div class="progress-bar bg-primary" style="width:{{ seller.response_rate }}%;"></div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {# Actions #}
+        <div class="d-grid gap-2">
+            <a href="{% url 'seller_profile' seller.id %}" class="btn btn-outline-primary">
+                View Store
+            </a>
+            {% if show_contact %}
+            <a href="{% url 'start_conversation' seller.id %}" class="btn btn-outline-light">
+                <span data-feather="message-circle" style="width:14px;height:14px;"></span> Message
+            </a>
+            {% endif %}
+        </div>
+        
+        {# Badges #}
+        {% if seller.badges %}
+        <div class="mt-3 pt-3 border-top border-secondary">
+            <div class="d-flex flex-wrap gap-2">
+                {% for badge in seller.badges %}
+                <span class="badge bg-dark border border-secondary" title="{{ badge.description }}">
+                    {{ badge.icon }} {{ badge.name }}
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% endwith %}

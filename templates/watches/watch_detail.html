@@ -1,0 +1,795 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ watch.brand }} {{ watch.model }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .watch-gallery {
+        position: relative;
+    }
+    
+    .main-image-container {
+        position: relative;
+        background-color: #1a1a1a;
+        border-radius: 12px;
+        overflow: hidden;
+        aspect-ratio: 4/3;
+    }
+    
+    .main-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        cursor: zoom-in;
+    }
+    
+    .image-counter {
+        position: absolute;
+        bottom: 15px;
+        right: 15px;
+        background-color: rgba(0,0,0,0.7);
+        color: #fff;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+    
+    .image-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        background-color: rgba(0,0,0,0.5);
+        border: none;
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    
+    .image-nav:hover {
+        background-color: var(--wb-primary);
+    }
+    
+    .image-nav.prev { left: 15px; }
+    .image-nav.next { right: 15px; }
+    
+    .thumbnail-strip {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+    
+    .thumbnail {
+        width: 80px;
+        height: 80px;
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        border: 2px solid transparent;
+        flex-shrink: 0;
+        transition: border-color 0.3s;
+    }
+    
+    .thumbnail.active {
+        border-color: var(--wb-primary);
+    }
+    
+    .thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .price-section {
+        background-color: #1a1a1a;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 20px;
+    }
+    
+    .price-label {
+        font-size: 0.85rem;
+        color: #999;
+        text-transform: uppercase;
+    }
+    
+    .price-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--wb-primary);
+    }
+    
+    .negotiation-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        margin-top: 10px;
+    }
+    
+    .negotiation-badge.open {
+        background-color: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+    
+    .negotiation-badge.fixed {
+        background-color: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+    }
+    
+    .highest-offer {
+        background-color: rgba(198, 169, 97, 0.1);
+        padding: 10px 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+        font-size: 0.9rem;
+    }
+    
+    .transaction-option {
+        background-color: #2a2a2a;
+        border: 2px solid #333;
+        border-radius: 12px;
+        padding: 20px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .transaction-option:hover {
+        border-color: #555;
+    }
+    
+    .transaction-option.selected {
+        border-color: var(--wb-primary);
+        background-color: rgba(198, 169, 97, 0.1);
+    }
+    
+    .transaction-option input {
+        display: none;
+    }
+    
+    .transaction-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: rgba(198, 169, 97, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--wb-primary);
+        margin-bottom: 10px;
+    }
+    
+    .seller-card {
+        background-color: #1a1a1a;
+        border-radius: 12px;
+        padding: 25px;
+    }
+    
+    .seller-logo {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .specs-table {
+        background-color: #1a1a1a;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .specs-table table {
+        margin-bottom: 0;
+    }
+    
+    .specs-table td {
+        padding: 15px 20px;
+        border-bottom: 1px solid #333;
+    }
+    
+    .specs-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .specs-table .spec-label {
+        color: #999;
+        width: 40%;
+    }
+    
+    .specs-table .spec-value {
+        color: #fff;
+        font-weight: 600;
+    }
+    
+    .related-watches {
+        overflow-x: auto;
+        padding-bottom: 15px;
+    }
+    
+    .related-watches-inner {
+        display: flex;
+        gap: 20px;
+    }
+    
+    .related-watch-card {
+        flex-shrink: 0;
+        width: 250px;
+    }
+    
+    /* Lightbox */
+    .lightbox {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0,0,0,0.95);
+        z-index: 2000;
+        padding: 50px;
+    }
+    
+    .lightbox.show {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .lightbox-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 2rem;
+        cursor: pointer;
+    }
+    
+    .lightbox-image {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+    }
+    
+    @media (max-width: 991px) {
+        .action-buttons {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #1a1a1a;
+            padding: 15px;
+            z-index: 100;
+            border-top: 1px solid #333;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="py-6">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-muted">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'watch_list' %}" class="text-muted">Watches</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'watch_list' %}?brand={{ watch.brand }}" class="text-muted">{{ watch.brand }}</a></li>
+                <li class="breadcrumb-item active text-primary" aria-current="page">{{ watch.model }}</li>
+            </ol>
+        </nav>
+        
+        <div class="row">
+            <!-- Left Column: Image Gallery -->
+            <div class="col-lg-7 mb-4 mb-lg-0">
+                <div class="watch-gallery">
+                    <div class="main-image-container">
+                        <img src="{{ watch.primary_image.url }}" alt="{{ watch.brand }} {{ watch.model }}" 
+                             class="main-image" id="mainImage" onclick="openLightbox()">
+                        
+                        <span class="image-counter">
+                            <span id="currentImageNum">1</span> / {{ watch.images.count }}
+                        </span>
+                        
+                        {% if watch.images.count > 1 %}
+                        <button class="image-nav prev" onclick="prevImage()">
+                            <span data-feather="chevron-left"></span>
+                        </button>
+                        <button class="image-nav next" onclick="nextImage()">
+                            <span data-feather="chevron-right"></span>
+                        </button>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="thumbnail-strip">
+                        {% for image in watch.images.all %}
+                        <div class="thumbnail {% if forloop.first %}active{% endif %}" 
+                             onclick="selectImage({{ forloop.counter0 }}, '{{ image.url }}')">
+                            <img src="{{ image.url }}" alt="Thumbnail {{ forloop.counter }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column: Watch Details -->
+            <div class="col-lg-5">
+                <!-- Brand & Model -->
+                <p class="text-primary text-uppercase mb-1">{{ watch.brand }}</p>
+                <h1 class="display-5 text-light mb-2">{{ watch.model }}</h1>
+                {% if watch.model_number %}
+                <p class="text-muted mb-3">Ref: {{ watch.model_number }}</p>
+                {% endif %}
+                
+                <!-- Badges -->
+                <div class="d-flex gap-2 mb-4">
+                    <span class="badge bg-primary text-dark">{{ watch.condition }}</span>
+                    <span class="badge bg-dark">{{ watch.category }}</span>
+                    {% if watch.seller.is_verified %}
+                    <span class="badge bg-success">
+                        <span data-feather="check" style="width:12px;height:12px;"></span> Verified Seller
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <!-- Price Section -->
+                <div class="price-section">
+                    <p class="price-label mb-1">Asking Price</p>
+                    <p class="price-value mb-0">Rs. {{ watch.price|floatformat:0|intcomma }}</p>
+                    
+                    {% if watch.allow_negotiations %}
+                    <span class="negotiation-badge open">
+                        <span data-feather="message-circle" style="width:12px;height:12px;"></span> Negotiations Open
+                    </span>
+                    {% else %}
+                    <span class="negotiation-badge fixed">
+                        <span data-feather="lock" style="width:12px;height:12px;"></span> Fixed Price
+                    </span>
+                    {% endif %}
+                    
+                    {% if watch.highest_offer %}
+                    <div class="highest-offer">
+                        <span data-feather="trending-up" style="width:14px;height:14px;color:var(--wb-primary);"></span>
+                        Highest current offer: <strong class="text-primary">Rs. {{ watch.highest_offer|floatformat:0|intcomma }}</strong>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Transaction Options -->
+                <div class="mb-4">
+                    <p class="text-muted text-uppercase small mb-3">Transaction Method</p>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="transaction-option d-block selected" id="meetingOption">
+                                <input type="radio" name="transaction_method" value="meeting" checked>
+                                <div class="transaction-icon">
+                                    <span data-feather="map-pin"></span>
+                                </div>
+                                <strong class="text-light d-block">Karachi Meeting</strong>
+                                <small class="text-muted">Our secure office location</small>
+                                <p class="text-success mb-0 mt-2"><strong>Free</strong></p>
+                            </label>
+                        </div>
+                        <div class="col-6">
+                            <label class="transaction-option d-block" id="deliveryOption">
+                                <input type="radio" name="transaction_method" value="delivery">
+                                <div class="transaction-icon">
+                                    <span data-feather="truck"></span>
+                                </div>
+                                <strong class="text-light d-block">Delivery</strong>
+                                <small class="text-muted">Nationwide shipping</small>
+                                <p class="text-muted mb-0 mt-2">
+                                    Fee: <strong class="text-primary" id="deliveryFee">Rs. 800</strong>
+                                </p>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="action-buttons mb-4">
+                    {% if watch.allow_negotiations %}
+                    <button type="button" class="btn btn-primary btn-lg w-100 mb-2" 
+                            onclick="openOfferModal({{ watch.id }}, '{{ watch.brand }} {{ watch.model }}', {{ watch.price }})">
+                        <span data-feather="tag" style="width:18px;height:18px;"></span> Make an Offer
+                    </button>
+                    {% else %}
+                    <form action="{% url 'add_to_cart' watch.id %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="transaction_method" id="cartTransactionMethod" value="meeting">
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mb-2">
+                            <span data-feather="shopping-cart" style="width:18px;height:18px;"></span> Add to Cart
+                        </button>
+                    </form>
+                    {% endif %}
+                    
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-light flex-grow-1" 
+                                onclick="toggleWishlist({{ watch.id }}, this)">
+                            <span data-feather="heart" style="width:18px;height:18px;{% if watch.is_wishlisted %}fill:currentColor;{% endif %}"></span>
+                            Wishlist
+                        </button>
+                        <button type="button" class="btn btn-outline-light" onclick="shareWatch()">
+                            <span data-feather="share-2" style="width:18px;height:18px;"></span>
+                        </button>
+                        <button type="button" class="btn btn-outline-light" onclick="reportWatch()">
+                            <span data-feather="flag" style="width:18px;height:18px;"></span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Seller Card -->
+                <div class="seller-card">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="{{ watch.seller.logo.url|default:'/static/assets/img/default-store.png' }}" 
+                             alt="{{ watch.seller.store_name }}" class="seller-logo me-3">
+                        <div>
+                            <h6 class="text-light mb-0">{{ watch.seller.store_name }}</h6>
+                            {% if watch.seller.is_verified %}
+                            <small class="text-success">
+                                <span data-feather="check-circle" style="width:12px;height:12px;"></span> Verified Seller
+                            </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-2">
+                        <span data-feather="clock" style="width:12px;height:12px;"></span>
+                        In business for {{ watch.seller.years_in_business }} years
+                    </p>
+                    <p class="text-muted small mb-3">
+                        <span data-feather="message-circle" style="width:12px;height:12px;"></span>
+                        Usually responds within {{ watch.seller.avg_response_time }}
+                    </p>
+                    <a href="{% url 'seller_profile' watch.seller.id %}" class="btn btn-outline-light btn-sm w-100">
+                        View Store <span data-feather="arrow-right" style="width:14px;height:14px;"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tabs: Specifications, Description, Seller Info -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <ul class="nav nav-tabs border-0" id="watchTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active text-uppercase" id="specs-tab" data-bs-toggle="tab" 
+                                data-bs-target="#specs" type="button" role="tab">Specifications</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-uppercase" id="description-tab" data-bs-toggle="tab" 
+                                data-bs-target="#description" type="button" role="tab">Description</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-uppercase" id="seller-tab" data-bs-toggle="tab" 
+                                data-bs-target="#seller" type="button" role="tab">Seller Info</button>
+                    </li>
+                    {% if request.user == watch.seller.user or request.user.is_staff %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-uppercase" id="offers-tab" data-bs-toggle="tab" 
+                                data-bs-target="#offers" type="button" role="tab">
+                            Offers <span class="badge bg-primary text-dark">{{ watch.offers.count }}</span>
+                        </button>
+                    </li>
+                    {% endif %}
+                </ul>
+                
+                <div class="tab-content pt-4" id="watchTabsContent">
+                    <!-- Specifications Tab -->
+                    <div class="tab-pane fade show active" id="specs" role="tabpanel">
+                        <div class="specs-table">
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <td class="spec-label">Brand</td>
+                                        <td class="spec-value">{{ watch.brand }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="spec-label">Model</td>
+                                        <td class="spec-value">{{ watch.model }}</td>
+                                    </tr>
+                                    {% if watch.model_number %}
+                                    <tr>
+                                        <td class="spec-label">Model Number</td>
+                                        <td class="spec-value">{{ watch.model_number }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if watch.year %}
+                                    <tr>
+                                        <td class="spec-label">Year of Manufacture</td>
+                                        <td class="spec-value">{{ watch.year }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    <tr>
+                                        <td class="spec-label">Condition</td>
+                                        <td class="spec-value">{{ watch.condition }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="spec-label">Gender</td>
+                                        <td class="spec-value">{{ watch.gender }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="spec-label">Movement Type</td>
+                                        <td class="spec-value">{{ watch.movement_type }}</td>
+                                    </tr>
+                                    {% if watch.case_material %}
+                                    <tr>
+                                        <td class="spec-label">Case Material</td>
+                                        <td class="spec-value">{{ watch.case_material }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if watch.band_material %}
+                                    <tr>
+                                        <td class="spec-label">Band Material</td>
+                                        <td class="spec-value">{{ watch.band_material }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if watch.case_diameter %}
+                                    <tr>
+                                        <td class="spec-label">Case Diameter</td>
+                                        <td class="spec-value">{{ watch.case_diameter }} mm</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if watch.water_resistance %}
+                                    <tr>
+                                        <td class="spec-label">Water Resistance</td>
+                                        <td class="spec-value">{{ watch.water_resistance }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if watch.features %}
+                                    <tr>
+                                        <td class="spec-label">Features</td>
+                                        <td class="spec-value">{{ watch.features|join:", " }}</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Description Tab -->
+                    <div class="tab-pane fade" id="description" role="tabpanel">
+                        <div class="bg-dark rounded p-4">
+                            <div class="text-light" style="white-space: pre-wrap;">{{ watch.description }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Seller Info Tab -->
+                    <div class="tab-pane fade" id="seller" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="bg-dark rounded p-4 h-100">
+                                    <div class="d-flex align-items-center mb-4">
+                                        <img src="{{ watch.seller.logo.url|default:'/static/assets/img/default-store.png' }}" 
+                                             alt="{{ watch.seller.store_name }}" 
+                                             style="width:80px;height:80px;border-radius:50%;object-fit:cover;" class="me-4">
+                                        <div>
+                                            <h5 class="text-light mb-1">{{ watch.seller.store_name }}</h5>
+                                            <span class="badge bg-success">Verified Seller</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-muted">{{ watch.seller.description }}</p>
+                                    <ul class="list-unstyled text-muted">
+                                        <li class="mb-2">
+                                            <span data-feather="briefcase" style="width:14px;height:14px;"></span>
+                                            {{ watch.seller.business_type }}
+                                        </li>
+                                        <li class="mb-2">
+                                            <span data-feather="calendar" style="width:14px;height:14px;"></span>
+                                            {{ watch.seller.years_in_business }} years in business
+                                        </li>
+                                        <li class="mb-2">
+                                            <span data-feather="map-pin" style="width:14px;height:14px;"></span>
+                                            {{ watch.seller.city }}
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mt-4 mt-md-0">
+                                <div class="bg-dark rounded p-4 h-100">
+                                    <h6 class="text-uppercase text-light mb-4">More from this seller</h6>
+                                    <!-- TODO: Add seller's other listings here -->
+                                    <a href="{% url 'seller_profile' watch.seller.id %}" class="btn btn-outline-light w-100">
+                                        View All Listings
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Offers Tab (Seller/Admin only) -->
+                    {% if request.user == watch.seller.user or request.user.is_staff %}
+                    <div class="tab-pane fade" id="offers" role="tabpanel">
+                        <div class="bg-dark rounded p-4">
+                            {% if watch.offers.exists %}
+                            <table class="table table-dark">
+                                <thead>
+                                    <tr>
+                                        <th>Buyer</th>
+                                        <th>Offer Amount</th>
+                                        <th>Method</th>
+                                        <th>Time</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for offer in watch.offers.all %}
+                                    <tr>
+                                        <td>User{{ offer.buyer.id }}</td>
+                                        <td class="text-primary fw-bold">Rs. {{ offer.amount|floatformat:0|intcomma }}</td>
+                                        <td>{{ offer.transaction_method }}</td>
+                                        <td>{{ offer.created_at|timesince }} ago</td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if offer.status == 'pending' %}bg-warning text-dark
+                                                {% elif offer.status == 'accepted' %}bg-success
+                                                {% elif offer.status == 'declined' %}bg-danger
+                                                {% else %}bg-secondary{% endif %}">
+                                                {{ offer.status }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if offer.status == 'pending' %}
+                                            <button class="btn btn-success btn-sm">Accept</button>
+                                            <button class="btn btn-primary btn-sm">Counter</button>
+                                            <button class="btn btn-outline-danger btn-sm">Decline</button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% else %}
+                            <p class="text-muted text-center mb-0">No offers yet</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Related Watches -->
+        {% if related_watches %}
+        <div class="row mt-5">
+            <div class="col-12">
+                <h4 class="text-uppercase text-light mb-4">Similar Watches You Might Like</h4>
+                <div class="related-watches">
+                    <div class="related-watches-inner">
+                        {% for related in related_watches %}
+                        <div class="related-watch-card">
+                            {% include 'components/watch_card.html' with watch=related show_offer_btn=True show_cart_btn=True %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+    <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+    <img src="" alt="Watch image" class="lightbox-image" id="lightboxImage">
+</div>
+
+<!-- Offer Modal -->
+{% include 'components/offer_modal.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const images = [
+        {% for image in watch.images.all %}
+        '{{ image.url }}'{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+    let currentImageIndex = 0;
+    
+    function selectImage(index, url) {
+        currentImageIndex = index;
+        document.getElementById('mainImage').src = url;
+        document.getElementById('currentImageNum').textContent = index + 1;
+        
+        document.querySelectorAll('.thumbnail').forEach((thumb, i) => {
+            thumb.classList.toggle('active', i === index);
+        });
+    }
+    
+    function nextImage() {
+        const nextIndex = (currentImageIndex + 1) % images.length;
+        selectImage(nextIndex, images[nextIndex]);
+    }
+    
+    function prevImage() {
+        const prevIndex = (currentImageIndex - 1 + images.length) % images.length;
+        selectImage(prevIndex, images[prevIndex]);
+    }
+    
+    function openLightbox() {
+        const lightbox = document.getElementById('lightbox');
+        document.getElementById('lightboxImage').src = images[currentImageIndex];
+        lightbox.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeLightbox() {
+        document.getElementById('lightbox').classList.remove('show');
+        document.body.style.overflow = '';
+    }
+    
+    // Transaction option selection
+    document.querySelectorAll('.transaction-option').forEach(option => {
+        option.addEventListener('click', function() {
+            document.querySelectorAll('.transaction-option').forEach(o => o.classList.remove('selected'));
+            this.classList.add('selected');
+            this.querySelector('input').checked = true;
+            document.getElementById('cartTransactionMethod').value = this.querySelector('input').value;
+        });
+    });
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (document.getElementById('lightbox').classList.contains('show')) {
+            if (e.key === 'ArrowRight') nextImage();
+            if (e.key === 'ArrowLeft') prevImage();
+            if (e.key === 'Escape') closeLightbox();
+        }
+    });
+    
+    // Share functionality
+    function shareWatch() {
+        if (navigator.share) {
+            navigator.share({
+                title: '{{ watch.brand }} {{ watch.model }} - WatchBazaar PK',
+                url: window.location.href
+            });
+        } else {
+            // Fallback: copy to clipboard
+            navigator.clipboard.writeText(window.location.href);
+            alert('Link copied to clipboard!');
+        }
+    }
+    
+    // Report functionality
+    function reportWatch() {
+        // TODO: Implement report modal
+        alert('Report functionality coming soon');
+    }
+    
+    // Wishlist toggle
+    function toggleWishlist(watchId, button) {
+        fetch(`/wishlist/toggle/${watchId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const icon = button.querySelector('[data-feather="heart"]');
+            if (data.wishlisted) {
+                icon.style.fill = 'currentColor';
+            } else {
+                icon.style.fill = 'none';
+            }
+            feather.replace();
+        });
+    }
+</script>
+{% endblock %}

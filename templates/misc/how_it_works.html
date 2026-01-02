@@ -1,0 +1,418 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}How It Works - WatchBazaar PK{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="py-5 text-center" style="background:linear-gradient(180deg, var(--wb-dark-secondary) 0%, var(--wb-dark) 100%);">
+    <div class="container py-5">
+        <h1 class="display-4 fw-bold text-light mb-3">How WatchBazaar Works</h1>
+        <p class="lead text-muted mx-auto" style="max-width:600px;">
+            Whether you're buying your dream watch or selling your collection, 
+            we make the process simple, secure, and seamless.
+        </p>
+    </div>
+</section>
+
+<!-- For Buyers Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="badge bg-primary mb-3">FOR BUYERS</span>
+            <h2 class="text-light">Find Your Perfect Timepiece</h2>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Step 1 -->
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="mx-auto mb-4 position-relative" 
+                         style="width:100px;height:100px;background:rgba(198,169,97,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <span class="display-5 fw-bold text-primary">1</span>
+                        <div class="position-absolute" style="right:-30px;top:50%;transform:translateY(-50%);">
+                            <span data-feather="arrow-right" class="text-muted d-none d-md-block" style="width:20px;height:20px;"></span>
+                        </div>
+                    </div>
+                    <div class="px-2">
+                        <span data-feather="search" class="text-primary mb-3" style="width:32px;height:32px;"></span>
+                        <h5 class="text-light mt-2">Browse & Discover</h5>
+                        <p class="text-muted small">
+                            Explore thousands of authentic watches from verified sellers. 
+                            Filter by brand, price, condition, and more.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 2 -->
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="mx-auto mb-4 position-relative" 
+                         style="width:100px;height:100px;background:rgba(198,169,97,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <span class="display-5 fw-bold text-primary">2</span>
+                        <div class="position-absolute" style="right:-30px;top:50%;transform:translateY(-50%);">
+                            <span data-feather="arrow-right" class="text-muted d-none d-md-block" style="width:20px;height:20px;"></span>
+                        </div>
+                    </div>
+                    <div class="px-2">
+                        <span data-feather="message-square" class="text-primary mb-3" style="width:32px;height:32px;"></span>
+                        <h5 class="text-light mt-2">Make an Offer</h5>
+                        <p class="text-muted small">
+                            Found something you like? Buy instantly or negotiate with the 
+                            seller through our secure offer system.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 3 -->
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="mx-auto mb-4 position-relative" 
+                         style="width:100px;height:100px;background:rgba(198,169,97,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <span class="display-5 fw-bold text-primary">3</span>
+                        <div class="position-absolute" style="right:-30px;top:50%;transform:translateY(-50%);">
+                            <span data-feather="arrow-right" class="text-muted d-none d-md-block" style="width:20px;height:20px;"></span>
+                        </div>
+                    </div>
+                    <div class="px-2">
+                        <span data-feather="credit-card" class="text-primary mb-3" style="width:32px;height:32px;"></span>
+                        <h5 class="text-light mt-2">Secure Payment</h5>
+                        <p class="text-muted small">
+                            Pay safely through our platform. Your money is held securely 
+                            until you receive and approve your watch.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 4 -->
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="mx-auto mb-4" 
+                         style="width:100px;height:100px;background:rgba(198,169,97,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <span class="display-5 fw-bold text-primary">4</span>
+                    </div>
+                    <div class="px-2">
+                        <span data-feather="package" class="text-primary mb-3" style="width:32px;height:32px;"></span>
+                        <h5 class="text-light mt-2">Receive & Enjoy</h5>
+                        <p class="text-muted small">
+                            Get your watch delivered insured or meet the seller in person. 
+                            Inspect, approve, and enjoy your new timepiece!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{% url 'watch_list' %}" class="btn btn-primary btn-lg px-5">
+                Start Shopping
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Divider -->
+<div class="py-3" style="background:var(--wb-dark-secondary);">
+    <div class="container">
+        <div class="text-center">
+            <span class="text-muted">— OR —</span>
+        </div>
+    </div>
+</div>
+
+<!-- For Sellers Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="badge bg-success mb-3">FOR SELLERS</span>
+            <h2 class="text-light">Sell Your Watches</h2>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Step 1 -->
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="mx-auto mb-4 position-relative" 
+                         style="width:100px;height:100px;background:rgba(40,167,69,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <span class="display-5 fw-bold text-success">1</span>
+                        <div class="position-absolute" style="right:-30px;top:50%;transform:translateY(-50%);">
+                            <span data-feather="arrow-right" class="text-muted d-none d-md-block" style="width:20px;height:20px;"></span>
+                        </div>
+                    </div>
+                    <div class="px-2">
+                        <span data-feather="user-plus" class="text-success mb-3" style="width:32px;height:32px;"></span>
+                        <h5 class="text-light mt-2">Create Seller Account</h5>
+                        <p class="text-muted small">
+                            Sign up and complete seller verification. 
+                            It only takes a few minutes to get approved.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 2 -->
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="mx-auto mb-4 position-relative" 
+                         style="width:100px;height:100px;background:rgba(40,167,69,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <span class="display-5 fw-bold text-success">2</span>
+                        <div class="position-absolute" style="right:-30px;top:50%;transform:translateY(-50%);">
+                            <span data-feather="arrow-right" class="text-muted d-none d-md-block" style="width:20px;height:20px;"></span>
+                        </div>
+                    </div>
+                    <div class="px-2">
+                        <span data-feather="camera" class="text-success mb-3" style="width:32px;height:32px;"></span>
+                        <h5 class="text-light mt-2">List Your Watches</h5>
+                        <p class="text-muted small">
+                            Upload photos, add details, and set your price. 
+                            Our step-by-step form makes it easy.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 3 -->
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="mx-auto mb-4 position-relative" 
+                         style="width:100px;height:100px;background:rgba(40,167,69,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <span class="display-5 fw-bold text-success">3</span>
+                        <div class="position-absolute" style="right:-30px;top:50%;transform:translateY(-50%);">
+                            <span data-feather="arrow-right" class="text-muted d-none d-md-block" style="width:20px;height:20px;"></span>
+                        </div>
+                    </div>
+                    <div class="px-2">
+                        <span data-feather="shopping-bag" class="text-success mb-3" style="width:32px;height:32px;"></span>
+                        <h5 class="text-light mt-2">Receive Offers</h5>
+                        <p class="text-muted small">
+                            Get notified when buyers show interest. 
+                            Accept, reject, or counter offers with ease.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 4 -->
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="mx-auto mb-4" 
+                         style="width:100px;height:100px;background:rgba(40,167,69,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                        <span class="display-5 fw-bold text-success">4</span>
+                    </div>
+                    <div class="px-2">
+                        <span data-feather="dollar-sign" class="text-success mb-3" style="width:32px;height:32px;"></span>
+                        <h5 class="text-light mt-2">Get Paid</h5>
+                        <p class="text-muted small">
+                            Ship the watch or meet in person. Receive your 
+                            payment directly to your bank account.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{% url 'seller_register' %}" class="btn btn-success btn-lg px-5">
+                Become a Seller
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5" style="background:var(--wb-dark-secondary);">
+    <div class="container">
+        <div class="text-center mb-5">
+            <p class="text-primary text-uppercase small mb-2">Why WatchBazaar?</p>
+            <h2 class="text-light">Built for Trust & Convenience</h2>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="d-flex align-items-start">
+                    <div class="me-3" style="width:50px;height:50px;background:rgba(198,169,97,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <span data-feather="shield" class="text-primary" style="width:24px;height:24px;"></span>
+                    </div>
+                    <div>
+                        <h5 class="text-light mb-2">Buyer Protection</h5>
+                        <p class="text-muted small mb-0">
+                            Your payment is held securely until you receive and approve your watch. 
+                            Full refund if something goes wrong.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="d-flex align-items-start">
+                    <div class="me-3" style="width:50px;height:50px;background:rgba(198,169,97,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <span data-feather="check-circle" class="text-primary" style="width:24px;height:24px;"></span>
+                    </div>
+                    <div>
+                        <h5 class="text-light mb-2">Verified Sellers</h5>
+                        <p class="text-muted small mb-0">
+                            Every seller goes through our verification process. 
+                            Look for the verified badge for extra confidence.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="d-flex align-items-start">
+                    <div class="me-3" style="width:50px;height:50px;background:rgba(198,169,97,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <span data-feather="award" class="text-primary" style="width:24px;height:24px;"></span>
+                    </div>
+                    <div>
+                        <h5 class="text-light mb-2">Authenticity Guarantee</h5>
+                        <p class="text-muted small mb-0">
+                            We partner with experts to verify high-value watches. 
+                            Buy with confidence knowing you're getting the real deal.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="d-flex align-items-start">
+                    <div class="me-3" style="width:50px;height:50px;background:rgba(198,169,97,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <span data-feather="message-circle" class="text-primary" style="width:24px;height:24px;"></span>
+                    </div>
+                    <div>
+                        <h5 class="text-light mb-2">Secure Messaging</h5>
+                        <p class="text-muted small mb-0">
+                            Communicate directly with sellers through our platform. 
+                            Ask questions and negotiate with ease.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="d-flex align-items-start">
+                    <div class="me-3" style="width:50px;height:50px;background:rgba(198,169,97,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <span data-feather="truck" class="text-primary" style="width:24px;height:24px;"></span>
+                    </div>
+                    <div>
+                        <h5 class="text-light mb-2">Insured Shipping</h5>
+                        <p class="text-muted small mb-0">
+                            All shipments are fully insured with tracking. 
+                            Your watch arrives safely or we cover the loss.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="d-flex align-items-start">
+                    <div class="me-3" style="width:50px;height:50px;background:rgba(198,169,97,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <span data-feather="users" class="text-primary" style="width:24px;height:24px;"></span>
+                    </div>
+                    <div>
+                        <h5 class="text-light mb-2">In-Person Option</h5>
+                        <p class="text-muted small mb-0">
+                            Prefer meeting the seller? Arrange safe in-person 
+                            transactions at public locations.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Transaction Types -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <p class="text-primary text-uppercase small mb-2">Flexible Options</p>
+            <h2 class="text-light">Choose How You Transact</h2>
+        </div>
+        
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-5">
+                <div class="card bg-dark border-0 h-100 p-4">
+                    <div class="card-body text-center">
+                        <div class="mx-auto mb-4" 
+                             style="width:80px;height:80px;background:rgba(23,162,184,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                            <span data-feather="package" class="text-info" style="width:36px;height:36px;"></span>
+                        </div>
+                        <h4 class="text-light mb-3">Doorstep Delivery</h4>
+                        <p class="text-muted mb-4">
+                            Have your watch delivered straight to your door. Fully insured 
+                            and trackable. Inspect upon arrival and confirm through the platform.
+                        </p>
+                        <ul class="list-unstyled text-start text-muted small">
+                            <li class="mb-2">
+                                <span data-feather="check" class="text-success me-2" style="width:14px;height:14px;"></span>
+                                Nationwide delivery
+                            </li>
+                            <li class="mb-2">
+                                <span data-feather="check" class="text-success me-2" style="width:14px;height:14px;"></span>
+                                Full insurance coverage
+                            </li>
+                            <li class="mb-2">
+                                <span data-feather="check" class="text-success me-2" style="width:14px;height:14px;"></span>
+                                Real-time tracking
+                            </li>
+                            <li>
+                                <span data-feather="check" class="text-success me-2" style="width:14px;height:14px;"></span>
+                                7-day inspection period
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-5">
+                <div class="card bg-dark border-0 h-100 p-4">
+                    <div class="card-body text-center">
+                        <div class="mx-auto mb-4" 
+                             style="width:80px;height:80px;background:rgba(198,169,97,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                            <span data-feather="map-pin" class="text-primary" style="width:36px;height:36px;"></span>
+                        </div>
+                        <h4 class="text-light mb-3">In-Person Meeting</h4>
+                        <p class="text-muted mb-4">
+                            Meet the seller in person to inspect the watch before completing 
+                            the transaction. Perfect for high-value purchases.
+                        </p>
+                        <ul class="list-unstyled text-start text-muted small">
+                            <li class="mb-2">
+                                <span data-feather="check" class="text-success me-2" style="width:14px;height:14px;"></span>
+                                Inspect before paying
+                            </li>
+                            <li class="mb-2">
+                                <span data-feather="check" class="text-success me-2" style="width:14px;height:14px;"></span>
+                                Safe meeting locations
+                            </li>
+                            <li class="mb-2">
+                                <span data-feather="check" class="text-success me-2" style="width:14px;height:14px;"></span>
+                                Verified seller details
+                            </li>
+                            <li>
+                                <span data-feather="check" class="text-success me-2" style="width:14px;height:14px;"></span>
+                                Platform-mediated payments
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5" style="background:linear-gradient(135deg, rgba(198,169,97,0.15) 0%, rgba(198,169,97,0.05) 100%);">
+    <div class="container text-center py-4">
+        <h2 class="text-light mb-3">Ready to Get Started?</h2>
+        <p class="text-muted mb-4">Join thousands of watch enthusiasts on WatchBazaar PK.</p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a href="{% url 'signup' %}" class="btn btn-primary btn-lg px-5">Create Account</a>
+            <a href="{% url 'watch_list' %}" class="btn btn-outline-light btn-lg px-5">Browse Watches</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

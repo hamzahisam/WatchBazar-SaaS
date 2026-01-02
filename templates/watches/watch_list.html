@@ -1,0 +1,635 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Browse Watches{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-sidebar {
+        background-color: #1a1a1a;
+        border-radius: 12px;
+        position: sticky;
+        top: 100px;
+    }
+    
+    .filter-section {
+        border-bottom: 1px solid #333;
+        padding: 20px;
+    }
+    
+    .filter-section:last-child {
+        border-bottom: none;
+    }
+    
+    .filter-title {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #fff;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0;
+    }
+    
+    .filter-title[aria-expanded="false"] .chevron {
+        transform: rotate(-90deg);
+    }
+    
+    .filter-content {
+        margin-top: 15px;
+    }
+    
+    .filter-check {
+        display: flex;
+        align-items: center;
+        padding: 8px 0;
+        color: #999;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    
+    .filter-check:hover {
+        color: #fff;
+    }
+    
+    .filter-check input {
+        margin-right: 10px;
+    }
+    
+    .filter-count {
+        margin-left: auto;
+        font-size: 0.8rem;
+        color: #666;
+    }
+    
+    .price-range-inputs {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .price-range-inputs input {
+        width: 100%;
+        background-color: #2a2a2a;
+        border: 1px solid #333;
+        color: #fff;
+        padding: 8px 12px;
+        border-radius: 6px;
+    }
+    
+    .price-quick-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+    }
+    
+    .price-quick-btn {
+        padding: 4px 12px;
+        font-size: 0.75rem;
+        border-radius: 20px;
+        background-color: #333;
+        color: #999;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .price-quick-btn:hover,
+    .price-quick-btn.active {
+        background-color: var(--wb-primary);
+        color: #000;
+    }
+    
+    .active-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .active-filter-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        background-color: rgba(198, 169, 97, 0.2);
+        color: var(--wb-primary);
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+    
+    .active-filter-chip .remove {
+        margin-left: 8px;
+        cursor: pointer;
+        opacity: 0.7;
+    }
+    
+    .active-filter-chip .remove:hover {
+        opacity: 1;
+    }
+    
+    .view-toggle .btn {
+        padding: 8px 12px;
+        color: #666;
+        background: transparent;
+        border: 1px solid #333;
+    }
+    
+    .view-toggle .btn.active {
+        color: var(--wb-primary);
+        border-color: var(--wb-primary);
+    }
+    
+    .sort-dropdown .dropdown-toggle {
+        background-color: #1a1a1a;
+        border: 1px solid #333;
+        color: #fff;
+    }
+    
+    .sort-dropdown .dropdown-menu {
+        background-color: #1a1a1a;
+        border: 1px solid #333;
+    }
+    
+    .sort-dropdown .dropdown-item {
+        color: #999;
+    }
+    
+    .sort-dropdown .dropdown-item:hover,
+    .sort-dropdown .dropdown-item.active {
+        background-color: rgba(198, 169, 97, 0.1);
+        color: var(--wb-primary);
+    }
+    
+    .watch-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 24px;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        color: #333;
+        margin-bottom: 20px;
+    }
+    
+    @media (max-width: 991px) {
+        .filter-sidebar {
+            position: fixed;
+            top: 0;
+            left: -320px;
+            width: 300px;
+            height: 100vh;
+            z-index: 1050;
+            border-radius: 0;
+            overflow-y: auto;
+            transition: left 0.3s;
+        }
+        
+        .filter-sidebar.show {
+            left: 0;
+        }
+        
+        .filter-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1040;
+        }
+        
+        .filter-overlay.show {
+            display: block;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="py-6">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="fs-3 fs-lg-5 text-uppercase text-light mb-2">Browse Watches</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-muted">Home</a></li>
+                        <li class="breadcrumb-item active text-primary" aria-current="page">Browse</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Filter Overlay (Mobile) -->
+            <div class="filter-overlay" id="filterOverlay"></div>
+            
+            <!-- Filter Sidebar -->
+            <div class="col-lg-3">
+                <div class="filter-sidebar p-0" id="filterSidebar">
+                    <!-- Mobile Header -->
+                    <div class="d-lg-none d-flex justify-content-between align-items-center p-3 border-bottom border-secondary">
+                        <h5 class="text-light mb-0">Filters</h5>
+                        <button type="button" class="btn-close btn-close-white" id="closeFilters"></button>
+                    </div>
+                    
+                    <!-- Search Box -->
+                    <div class="filter-section">
+                        <div class="position-relative">
+                            <input type="text" 
+                                   class="form-control form-control-dark" 
+                                   id="searchInput"
+                                   placeholder="Search brand or model..."
+                                   value="{{ search_query }}">
+                            <span class="position-absolute top-50 end-0 translate-middle-y me-3 text-muted">
+                                <span data-feather="search" style="width:16px;height:16px;"></span>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Price Range Filter -->
+                    <div class="filter-section">
+                        <h6 class="filter-title" data-bs-toggle="collapse" data-bs-target="#filterPrice" aria-expanded="true">
+                            Price Range
+                            <span class="chevron" data-feather="chevron-down" style="width:16px;height:16px;"></span>
+                        </h6>
+                        <div class="collapse show filter-content" id="filterPrice">
+                            <div class="price-range-inputs">
+                                <input type="number" placeholder="Min" id="priceMin" value="{{ price_min }}">
+                                <span class="text-muted">—</span>
+                                <input type="number" placeholder="Max" id="priceMax" value="{{ price_max }}">
+                            </div>
+                            <div class="price-quick-filters">
+                                <button class="price-quick-btn" data-min="0" data-max="50000">Under 50k</button>
+                                <button class="price-quick-btn" data-min="50000" data-max="100000">50k-100k</button>
+                                <button class="price-quick-btn" data-min="100000" data-max="250000">100k-250k</button>
+                                <button class="price-quick-btn" data-min="250000" data-max="">250k+</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Brand Filter -->
+                    <div class="filter-section">
+                        <h6 class="filter-title" data-bs-toggle="collapse" data-bs-target="#filterBrand" aria-expanded="true">
+                            Brand
+                            <span class="chevron" data-feather="chevron-down" style="width:16px;height:16px;"></span>
+                        </h6>
+                        <div class="collapse show filter-content" id="filterBrand">
+                            {% for brand in brands %}
+                            <label class="filter-check">
+                                <input type="checkbox" name="brand" value="{{ brand.name }}" 
+                                       {% if brand.name in selected_brands %}checked{% endif %}>
+                                {{ brand.name }}
+                                <span class="filter-count">({{ brand.count }})</span>
+                            </label>
+                            {% endfor %}
+                            {% if brands|length > 5 %}
+                            <button type="button" class="btn btn-link text-primary p-0 mt-2" onclick="toggleAllBrands()">
+                                Show all brands
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Condition Filter -->
+                    <div class="filter-section">
+                        <h6 class="filter-title" data-bs-toggle="collapse" data-bs-target="#filterCondition" aria-expanded="true">
+                            Condition
+                            <span class="chevron" data-feather="chevron-down" style="width:16px;height:16px;"></span>
+                        </h6>
+                        <div class="collapse show filter-content" id="filterCondition">
+                            <label class="filter-check">
+                                <input type="radio" name="condition" value="" {% if not selected_condition %}checked{% endif %}>
+                                All Conditions
+                            </label>
+                            <label class="filter-check">
+                                <input type="radio" name="condition" value="new" {% if selected_condition == 'new' %}checked{% endif %}>
+                                New
+                            </label>
+                            <label class="filter-check">
+                                <input type="radio" name="condition" value="pre-owned" {% if selected_condition == 'pre-owned' %}checked{% endif %}>
+                                Pre-owned
+                            </label>
+                            <label class="filter-check">
+                                <input type="radio" name="condition" value="vintage" {% if selected_condition == 'vintage' %}checked{% endif %}>
+                                Vintage
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Category Filter -->
+                    <div class="filter-section">
+                        <h6 class="filter-title" data-bs-toggle="collapse" data-bs-target="#filterCategory" aria-expanded="true">
+                            Category
+                            <span class="chevron" data-feather="chevron-down" style="width:16px;height:16px;"></span>
+                        </h6>
+                        <div class="collapse show filter-content" id="filterCategory">
+                            {% for category in categories %}
+                            <label class="filter-check">
+                                <input type="checkbox" name="category" value="{{ category.slug }}"
+                                       {% if category.slug in selected_categories %}checked{% endif %}>
+                                {{ category.name }}
+                                <span class="filter-count">({{ category.count }})</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Movement Filter -->
+                    <div class="filter-section">
+                        <h6 class="filter-title" data-bs-toggle="collapse" data-bs-target="#filterMovement" aria-expanded="false">
+                            Movement Type
+                            <span class="chevron" data-feather="chevron-down" style="width:16px;height:16px;"></span>
+                        </h6>
+                        <div class="collapse filter-content" id="filterMovement">
+                            <label class="filter-check">
+                                <input type="checkbox" name="movement" value="automatic">
+                                Automatic
+                            </label>
+                            <label class="filter-check">
+                                <input type="checkbox" name="movement" value="quartz">
+                                Quartz
+                            </label>
+                            <label class="filter-check">
+                                <input type="checkbox" name="movement" value="manual">
+                                Manual
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Gender Filter -->
+                    <div class="filter-section">
+                        <h6 class="filter-title" data-bs-toggle="collapse" data-bs-target="#filterGender" aria-expanded="false">
+                            Gender
+                            <span class="chevron" data-feather="chevron-down" style="width:16px;height:16px;"></span>
+                        </h6>
+                        <div class="collapse filter-content" id="filterGender">
+                            <label class="filter-check">
+                                <input type="checkbox" name="gender" value="mens">
+                                Men's
+                            </label>
+                            <label class="filter-check">
+                                <input type="checkbox" name="gender" value="womens">
+                                Women's
+                            </label>
+                            <label class="filter-check">
+                                <input type="checkbox" name="gender" value="unisex">
+                                Unisex
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Filter Actions -->
+                    <div class="filter-section">
+                        <button type="button" class="btn btn-primary w-100 mb-2" onclick="applyFilters()">
+                            Apply Filters
+                        </button>
+                        <button type="button" class="btn btn-outline-light w-100" onclick="resetFilters()">
+                            Reset All
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-lg-9">
+                <!-- Toolbar -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                    <!-- Mobile Filter Toggle -->
+                    <button type="button" class="btn btn-outline-light d-lg-none" id="openFilters">
+                        <span data-feather="sliders" style="width:16px;height:16px;"></span> Filters
+                    </button>
+                    
+                    <!-- Results Count -->
+                    <div class="text-muted">
+                        Showing <strong class="text-light">{{ page_obj.start_index }}-{{ page_obj.end_index }}</strong> 
+                        of <strong class="text-light">{{ paginator.count }}</strong> watches
+                    </div>
+                    
+                    <!-- View Toggle & Sort -->
+                    <div class="d-flex gap-3 align-items-center">
+                        <div class="view-toggle btn-group">
+                            <button type="button" class="btn active" data-view="grid">
+                                <span data-feather="grid" style="width:16px;height:16px;"></span>
+                            </button>
+                            <button type="button" class="btn" data-view="list">
+                                <span data-feather="list" style="width:16px;height:16px;"></span>
+                            </button>
+                        </div>
+                        
+                        <div class="sort-dropdown dropdown">
+                            <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <span data-feather="arrow-down" style="width:14px;height:14px;"></span>
+                                {{ sort_label|default:"Latest" }}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item {% if sort == 'latest' %}active{% endif %}" href="?sort=latest">Latest</a></li>
+                                <li><a class="dropdown-item {% if sort == 'price_low' %}active{% endif %}" href="?sort=price_low">Price: Low to High</a></li>
+                                <li><a class="dropdown-item {% if sort == 'price_high' %}active{% endif %}" href="?sort=price_high">Price: High to Low</a></li>
+                                <li><a class="dropdown-item {% if sort == 'popular' %}active{% endif %}" href="?sort=popular">Most Popular</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Active Filters -->
+                {% if active_filters %}
+                <div class="active-filters">
+                    {% for filter in active_filters %}
+                    <span class="active-filter-chip">
+                        {{ filter.label }}: {{ filter.value }}
+                        <span class="remove" onclick="removeFilter('{{ filter.key }}', '{{ filter.value }}')">&times;</span>
+                    </span>
+                    {% endfor %}
+                    <a href="{% url 'watch_list' %}" class="text-muted small ms-2">Clear all</a>
+                </div>
+                {% endif %}
+                
+                <!-- Watch Grid -->
+                {% if watches %}
+                <div class="watch-grid" id="watchGrid">
+                    {% for watch in watches %}
+                    {% include 'components/watch_card.html' with watch=watch show_offer_btn=True show_cart_btn=True %}
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination -->
+                {% if is_paginated %}
+                <nav class="mt-5" aria-label="Watch listing pagination">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link bg-dark border-secondary text-light" href="?page={{ page_obj.previous_page_number }}">
+                                <span data-feather="chevron-left" style="width:16px;height:16px;"></span>
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link bg-primary border-primary text-dark">{{ num }}</span>
+                            </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link bg-dark border-secondary text-light" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link bg-dark border-secondary text-light" href="?page={{ page_obj.next_page_number }}">
+                                <span data-feather="chevron-right" style="width:16px;height:16px;"></span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                
+                {% else %}
+                <!-- Empty State -->
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <span data-feather="search" style="width:80px;height:80px;"></span>
+                    </div>
+                    <h4 class="text-light text-uppercase mb-3">No Watches Found</h4>
+                    <p class="text-muted mb-4">Try adjusting your filters or search terms</p>
+                    <a href="{% url 'watch_list' %}" class="btn btn-outline-primary">Clear All Filters</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Offer Modal -->
+{% include 'components/offer_modal.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Mobile filter toggle
+    const filterSidebar = document.getElementById('filterSidebar');
+    const filterOverlay = document.getElementById('filterOverlay');
+    
+    document.getElementById('openFilters').addEventListener('click', function() {
+        filterSidebar.classList.add('show');
+        filterOverlay.classList.add('show');
+    });
+    
+    document.getElementById('closeFilters').addEventListener('click', function() {
+        filterSidebar.classList.remove('show');
+        filterOverlay.classList.remove('show');
+    });
+    
+    filterOverlay.addEventListener('click', function() {
+        filterSidebar.classList.remove('show');
+        filterOverlay.classList.remove('show');
+    });
+    
+    // Price quick filters
+    document.querySelectorAll('.price-quick-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('priceMin').value = this.dataset.min;
+            document.getElementById('priceMax').value = this.dataset.max;
+            document.querySelectorAll('.price-quick-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+    
+    // View toggle
+    document.querySelectorAll('.view-toggle .btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.view-toggle .btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            const grid = document.getElementById('watchGrid');
+            if (this.dataset.view === 'list') {
+                grid.style.gridTemplateColumns = '1fr';
+            } else {
+                grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(280px, 1fr))';
+            }
+        });
+    });
+    
+    // Apply filters
+    function applyFilters() {
+        const params = new URLSearchParams();
+        
+        const search = document.getElementById('searchInput').value;
+        if (search) params.set('q', search);
+        
+        const priceMin = document.getElementById('priceMin').value;
+        const priceMax = document.getElementById('priceMax').value;
+        if (priceMin) params.set('price_min', priceMin);
+        if (priceMax) params.set('price_max', priceMax);
+        
+        document.querySelectorAll('input[name="brand"]:checked').forEach(cb => {
+            params.append('brand', cb.value);
+        });
+        
+        const condition = document.querySelector('input[name="condition"]:checked');
+        if (condition && condition.value) params.set('condition', condition.value);
+        
+        document.querySelectorAll('input[name="category"]:checked').forEach(cb => {
+            params.append('category', cb.value);
+        });
+        
+        window.location.search = params.toString();
+    }
+    
+    // Reset filters
+    function resetFilters() {
+        window.location.href = '{% url "watch_list" %}';
+    }
+    
+    // Remove individual filter
+    function removeFilter(key, value) {
+        const params = new URLSearchParams(window.location.search);
+        params.delete(key, value);
+        window.location.search = params.toString();
+    }
+    
+    // Wishlist toggle
+    function toggleWishlist(watchId, button) {
+        fetch(`/wishlist/toggle/${watchId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const icon = button.querySelector('[data-feather="heart"]');
+            if (data.wishlisted) {
+                icon.style.fill = 'currentColor';
+            } else {
+                icon.style.fill = 'none';
+            }
+            feather.replace();
+        });
+    }
+    
+    // Search on enter
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            applyFilters();
+        }
+    });
+</script>
+{% endblock %}

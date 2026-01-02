@@ -1,0 +1,488 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Order #{{ order.order_number }} - WatchBazaar PK{% endblock %}
+
+{% block extra_css %}
+<style>
+    .order-header {
+        background: linear-gradient(180deg, rgba(198, 169, 97, 0.1) 0%, rgba(0,0,0,0) 100%);
+        padding: 40px 0;
+    }
+    
+    .order-status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 20px;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+    
+    .order-status-badge.pending {
+        background-color: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+    }
+    
+    .order-status-badge.confirmed {
+        background-color: rgba(23, 162, 184, 0.2);
+        color: #17a2b8;
+    }
+    
+    .order-status-badge.processing {
+        background-color: rgba(198, 169, 97, 0.2);
+        color: var(--wb-primary);
+    }
+    
+    .order-status-badge.shipped {
+        background-color: rgba(111, 66, 193, 0.2);
+        color: #6f42c1;
+    }
+    
+    .order-status-badge.delivered, .order-status-badge.completed {
+        background-color: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+    
+    .order-status-badge.cancelled {
+        background-color: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+    }
+    
+    .order-card {
+        background-color: #1a1a1a;
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 25px;
+    }
+    
+    .section-title {
+        color: var(--wb-primary);
+        font-size: 1rem;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    /* Timeline */
+    .order-timeline {
+        position: relative;
+        padding-left: 40px;
+    }
+    
+    .order-timeline::before {
+        content: '';
+        position: absolute;
+        left: 12px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background-color: #333;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-bottom: 30px;
+    }
+    
+    .timeline-item:last-child {
+        padding-bottom: 0;
+    }
+    
+    .timeline-dot {
+        position: absolute;
+        left: -34px;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background-color: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+    }
+    
+    .timeline-dot.completed {
+        background-color: #28a745;
+    }
+    
+    .timeline-dot.active {
+        background-color: var(--wb-primary);
+        box-shadow: 0 0 0 4px rgba(198, 169, 97, 0.3);
+    }
+    
+    .timeline-content h6 {
+        margin-bottom: 5px;
+    }
+    
+    .timeline-content.pending h6 {
+        color: #666;
+    }
+    
+    /* Order Item */
+    .order-item {
+        display: flex;
+        padding: 20px;
+        background-color: #2a2a2a;
+        border-radius: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .order-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .order-item-image {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    
+    /* Info Grid */
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    
+    .info-item {
+        padding: 15px;
+        background-color: #2a2a2a;
+        border-radius: 8px;
+    }
+    
+    .info-label {
+        color: #888;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+    
+    .info-value {
+        color: #fff;
+        font-weight: 500;
+    }
+    
+    /* Action Buttons */
+    .order-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    @media (max-width: 767px) {
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .order-item {
+            flex-direction: column;
+        }
+        
+        .order-item-image {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 4/3;
+            margin-bottom: 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="order-header">
+    <div class="container">
+        <div class="text-center">
+            {% if order.status == 'completed' %}
+            <span data-feather="check-circle" style="width:50px;height:50px;color:#28a745;" class="mb-3"></span>
+            {% else %}
+            <span data-feather="package" style="width:50px;height:50px;color:var(--wb-primary);" class="mb-3"></span>
+            {% endif %}
+            
+            <h1 class="display-5 text-light mb-2">Order #{{ order.order_number }}</h1>
+            <p class="text-muted mb-3">Placed on {{ order.created_at|date:"F d, Y" }} at {{ order.created_at|time:"g:i A" }}</p>
+            
+            <span class="order-status-badge {{ order.status }}">
+                {% if order.status == 'pending' %}
+                <span data-feather="clock" style="width:16px;height:16px;" class="me-2"></span> Pending Confirmation
+                {% elif order.status == 'confirmed' %}
+                <span data-feather="check" style="width:16px;height:16px;" class="me-2"></span> Confirmed
+                {% elif order.status == 'processing' %}
+                <span data-feather="settings" style="width:16px;height:16px;" class="me-2"></span> Processing
+                {% elif order.status == 'shipped' %}
+                <span data-feather="truck" style="width:16px;height:16px;" class="me-2"></span> Shipped
+                {% elif order.status == 'delivered' or order.status == 'completed' %}
+                <span data-feather="check-circle" style="width:16px;height:16px;" class="me-2"></span> {{ order.status|title }}
+                {% elif order.status == 'cancelled' %}
+                <span data-feather="x-circle" style="width:16px;height:16px;" class="me-2"></span> Cancelled
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</section>
+
+<section class="pb-6">
+    <div class="container">
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-lg-8">
+                <!-- Order Timeline -->
+                <div class="order-card">
+                    <h5 class="section-title">
+                        <span data-feather="clock" style="width:18px;height:18px;"></span> Order Timeline
+                    </h5>
+                    
+                    <div class="order-timeline">
+                        {% for event in order.timeline %}
+                        <div class="timeline-item">
+                            <div class="timeline-dot {% if event.completed %}completed{% elif event.active %}active{% endif %}">
+                                {% if event.completed %}
+                                <span data-feather="check" style="width:14px;height:14px;color:#fff;"></span>
+                                {% elif event.active %}
+                                <span data-feather="{{ event.icon }}" style="width:14px;height:14px;color:#000;"></span>
+                                {% else %}
+                                <span data-feather="{{ event.icon }}" style="width:14px;height:14px;color:#666;"></span>
+                                {% endif %}
+                            </div>
+                            <div class="timeline-content {% if not event.completed and not event.active %}pending{% endif %}">
+                                <h6 class="{% if event.completed %}text-light{% elif event.active %}text-primary{% else %}text-muted{% endif %}">
+                                    {{ event.title }}
+                                </h6>
+                                <p class="text-muted small mb-0">
+                                    {% if event.timestamp %}
+                                    {{ event.timestamp|date:"M d, Y" }} at {{ event.timestamp|time:"g:i A" }}
+                                    {% elif event.active %}
+                                    In progress...
+                                    {% else %}
+                                    —
+                                    {% endif %}
+                                </p>
+                                {% if event.description %}
+                                <p class="text-muted small mt-1 mb-0">{{ event.description }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Order Items -->
+                <div class="order-card">
+                    <h5 class="section-title">
+                        <span data-feather="package" style="width:18px;height:18px;"></span> Order Items
+                    </h5>
+                    
+                    {% for item in order.items.all %}
+                    <div class="order-item">
+                        <img src="{{ item.watch.primary_image.url }}" alt="{{ item.watch.model }}" 
+                             class="order-item-image me-4">
+                        <div class="flex-grow-1">
+                            <p class="text-primary small mb-1">{{ item.watch.brand }}</p>
+                            <h6 class="text-light mb-2">{{ item.watch.model }}</h6>
+                            {% if item.watch.model_number %}
+                            <p class="text-muted small mb-2">Ref: {{ item.watch.model_number }}</p>
+                            {% endif %}
+                            
+                            <div class="d-flex gap-2">
+                                <span class="badge bg-dark">{{ item.watch.condition }}</span>
+                                <span class="badge {% if item.transaction_method == 'meeting' %}bg-success{% else %}bg-info{% endif %}">
+                                    {% if item.transaction_method == 'meeting' %}Meeting{% else %}Delivery{% endif %}
+                                </span>
+                            </div>
+                            
+                            <p class="text-muted small mt-2 mb-0">
+                                Seller: {{ item.watch.seller.store_name }}
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            <p class="text-primary fw-bold fs-5 mb-0">Rs. {{ item.price|floatformat:0|intcomma }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Transaction Details -->
+                {% if order.transaction_method == 'meeting' %}
+                <div class="order-card">
+                    <h5 class="section-title">
+                        <span data-feather="map-pin" style="width:18px;height:18px;"></span> Meeting Details
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <p class="info-label">Location</p>
+                                <p class="info-value mb-0">WatchBazaar Office - Karachi</p>
+                                <p class="text-muted small mb-0">Plot 123, Block 7, Clifton</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <p class="info-label">Scheduled Date & Time</p>
+                                <p class="info-value mb-0">
+                                    {{ order.meeting_date|date:"F d, Y" }} at {{ order.meeting_time }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info border-0 mt-3 mb-0" style="background-color:rgba(23,162,184,0.1);">
+                        <span data-feather="info" style="width:16px;height:16px;"></span>
+                        <span class="text-info">Please bring a valid ID for verification at the meeting.</span>
+                    </div>
+                </div>
+                {% elif order.transaction_method == 'delivery' %}
+                <div class="order-card">
+                    <h5 class="section-title">
+                        <span data-feather="truck" style="width:18px;height:18px;"></span> Delivery Details
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <p class="info-label">Shipping Address</p>
+                                <p class="info-value mb-0">{{ order.shipping_address }}</p>
+                                <p class="text-muted small mb-0">{{ order.city }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <p class="info-label">Tracking Number</p>
+                                {% if order.tracking_number %}
+                                <p class="info-value mb-0">{{ order.tracking_number }}</p>
+                                <a href="#" class="text-primary small">Track Shipment</a>
+                                {% else %}
+                                <p class="text-muted mb-0">Will be updated once shipped</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Order Summary -->
+                <div class="order-card">
+                    <h5 class="text-light mb-4">Payment Summary</h5>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Subtotal</span>
+                        <span class="text-light">Rs. {{ order.subtotal|floatformat:0|intcomma }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Delivery Fee</span>
+                        <span class="text-light">
+                            {% if order.delivery_fee > 0 %}Rs. {{ order.delivery_fee|floatformat:0|intcomma }}{% else %}Free{% endif %}
+                        </span>
+                    </div>
+                    {% if order.discount > 0 %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-success">Discount</span>
+                        <span class="text-success">-Rs. {{ order.discount|floatformat:0|intcomma }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="d-flex justify-content-between pt-3 mt-2 border-top border-secondary">
+                        <span class="text-light fw-bold">Total</span>
+                        <span class="text-primary fw-bold fs-4">Rs. {{ order.total|floatformat:0|intcomma }}</span>
+                    </div>
+                    
+                    <hr class="border-secondary my-4">
+                    
+                    <div class="mb-3">
+                        <p class="info-label mb-1">Payment Method</p>
+                        <p class="text-light mb-0">
+                            {% if order.payment_method == 'cash' %}
+                            Cash on Delivery
+                            {% elif order.payment_method == 'bank' %}
+                            Bank Transfer
+                            {% elif order.payment_method == 'jazzcash' %}
+                            JazzCash
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <p class="info-label mb-1">Payment Status</p>
+                        <span class="badge {% if order.payment_status == 'paid' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                            {{ order.payment_status|title }}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Contact Info -->
+                <div class="order-card">
+                    <h5 class="text-light mb-4">Contact Information</h5>
+                    
+                    <div class="mb-3">
+                        <p class="info-label mb-1">Name</p>
+                        <p class="text-light mb-0">{{ order.customer_name }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="info-label mb-1">Phone</p>
+                        <p class="text-light mb-0">{{ order.customer_phone }}</p>
+                    </div>
+                    <div>
+                        <p class="info-label mb-1">Email</p>
+                        <p class="text-light mb-0">{{ order.customer_email }}</p>
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="order-actions">
+                    {% if order.status == 'pending' %}
+                    <button class="btn btn-outline-danger flex-grow-1" onclick="cancelOrder()">
+                        <span data-feather="x" style="width:16px;height:16px;"></span> Cancel Order
+                    </button>
+                    {% endif %}
+                    
+                    <a href="{% url 'contact' %}" class="btn btn-outline-light flex-grow-1">
+                        <span data-feather="help-circle" style="width:16px;height:16px;"></span> Need Help?
+                    </a>
+                    
+                    {% if order.status == 'completed' %}
+                    <button class="btn btn-primary flex-grow-1" onclick="downloadInvoice()">
+                        <span data-feather="download" style="width:16px;height:16px;"></span> Invoice
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function cancelOrder() {
+        if (!confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
+            return;
+        }
+        
+        fetch(`/orders/{{ order.id }}/cancel/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Failed to cancel order');
+            }
+        });
+    }
+    
+    function downloadInvoice() {
+        window.open(`/orders/{{ order.id }}/invoice/`, '_blank');
+    }
+</script>
+{% endblock %}

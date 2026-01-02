@@ -1,0 +1,39 @@
+{% comment %}
+Empty State Component
+Usage: {% include 'components/empty_state.html' with icon='shopping-bag' title='No Orders' message='You have not placed any orders yet.' %}
+
+Expects:
+- icon: Feather icon name
+- title: Main heading
+- Optional: message (descriptive text)
+- Optional: action_url (button link)
+- Optional: action_text (button text)
+- Optional: secondary_action_url
+- Optional: secondary_action_text
+{% endcomment %}
+
+<div class="text-center py-5">
+    <div class="mx-auto mb-4" 
+         style="width:100px;height:100px;background:rgba(198,169,97,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+        <span data-feather="{{ icon|default:'inbox' }}" class="text-primary" style="width:48px;height:48px;"></span>
+    </div>
+    
+    <h5 class="text-light mb-2">{{ title }}</h5>
+    
+    {% if message %}
+    <p class="text-muted mb-4 mx-auto" style="max-width:400px;">{{ message }}</p>
+    {% endif %}
+    
+    {% if action_url and action_text %}
+    <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <a href="{{ action_url }}" class="btn btn-primary px-4">
+            {{ action_text }}
+        </a>
+        {% if secondary_action_url and secondary_action_text %}
+        <a href="{{ secondary_action_url }}" class="btn btn-outline-light px-4">
+            {{ secondary_action_text }}
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>

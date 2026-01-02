@@ -1,0 +1,79 @@
+{% comment %}
+Watch Card Component
+Usage: {% include 'components/watch_card.html' with watch=watch show_offer_btn=True show_cart_btn=False %}
+{% endcomment %}
+
+<div class="card bg-black text-white p-4 pb-6 h-100 card-hover position-relative">
+    {% if watch.seller.is_verified %}
+    <span class="badge bg-success position-absolute top-0 end-0 m-3" style="z-index: 2;">
+        <span data-feather="check" style="width:12px;height:12px;"></span> Verified
+    </span>
+    {% endif %}
+    
+    {% if watch.offers_count > 0 %}
+    <span class="badge bg-primary position-absolute top-0 start-0 m-3" style="z-index: 2;">
+        {{ watch.offers_count }} offer{{ watch.offers_count|pluralize }}
+    </span>
+    {% endif %}
+    
+    <div class="position-relative overflow-hidden" style="aspect-ratio: 1/1;">
+        <img class="card-img h-100 w-100" 
+             src="{% if watch.primary_image %}{{ watch.primary_image.url }}{% else %}{% static 'assets/img/gallery/watch-placeholder.png' %}{% endif %}" 
+             alt="{{ watch.brand }} {{ watch.model }}"
+             style="object-fit: cover;">
+    </div>
+    
+    <div class="card-img-overlay bg-dark-gradient d-flex flex-column-reverse align-items-center p-3">
+        <!-- Price -->
+        <h6 class="text-primary fw-bold mb-1">Rs. {{ watch.price|floatformat:0|intcomma }}</h6>
+        
+        <!-- Model Name -->
+        <h5 class="text-light text-truncate w-100 text-center mb-1">{{ watch.model }}</h5>
+        
+        <!-- Brand -->
+        <p class="text-muted text-uppercase small mb-0">{{ watch.brand }}</p>
+        
+        <!-- Condition & Location -->
+        <div class="d-flex gap-2 mt-2 flex-wrap justify-content-center">
+            <span class="badge bg-secondary text-uppercase">{{ watch.condition }}</span>
+            <span class="badge bg-dark">
+                <span data-feather="map-pin" style="width:10px;height:10px;"></span> {{ watch.city }}
+            </span>
+        </div>
+    </div>
+    
+    <!-- Hover Actions (shown on hover) -->
+    <div class="card-actions position-absolute bottom-0 start-0 end-0 p-3 d-flex gap-2 justify-content-center"
+         style="background: linear-gradient(transparent, rgba(0,0,0,0.9)); transform: translateY(100%); transition: transform 0.3s;">
+        <a href="{% url 'watch_detail' watch.id %}" class="btn btn-sm btn-outline-light flex-grow-1">
+            <span data-feather="eye" style="width:14px;height:14px;"></span> View
+        </a>
+        {% if show_offer_btn and not watch.is_fixed_price %}
+        <button type="button" class="btn btn-sm btn-primary flex-grow-1" 
+                onclick="openOfferModal({{ watch.id }}, '{{ watch.brand }} {{ watch.model }}', {{ watch.price }})">
+            <span data-feather="tag" style="width:14px;height:14px;"></span> Offer
+        </button>
+        {% endif %}
+        {% if show_cart_btn and watch.is_fixed_price %}
+        <form action="{% url 'add_to_cart' watch.id %}" method="post" class="flex-grow-1">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-primary w-100">
+                <span data-feather="shopping-cart" style="width:14px;height:14px;"></span> Add
+            </button>
+        </form>
+        {% endif %}
+        <button type="button" class="btn btn-sm btn-outline-light" 
+                onclick="toggleWishlist({{ watch.id }}, this)"
+                data-wishlisted="{{ watch.is_wishlisted|yesno:'true,false' }}">
+            <span data-feather="heart" style="width:14px;height:14px;{% if watch.is_wishlisted %}fill:currentColor;{% endif %}"></span>
+        </button>
+    </div>
+    
+    <a href="{% url 'watch_detail' watch.id %}" class="stretched-link"></a>
+</div>
+
+<style>
+    .card-hover:hover .card-actions {
+        transform: translateY(0) !important;
+    }
+</style>

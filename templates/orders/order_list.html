@@ -1,0 +1,44 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}My Orders - WatchBazaar PK{% endblock %}
+
+{% block dashboard_title %}My Orders{% endblock %}
+
+{% block dashboard_content %}
+<div class="card bg-dark border-0">
+    <div class="card-body">
+        {% if orders %}
+        <div class="table-responsive">
+            <table class="table table-dark mb-0">
+                <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Watch</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td><a href="{% url 'order_detail' order.id %}" class="text-primary">#{{ order.order_number }}</a></td>
+                        <td>{{ order.watch.brand }} {{ order.watch.model }}</td>
+                        <td class="text-primary">Rs. {{ order.total|floatformat:0|intcomma }}</td>
+                        <td><span class="badge bg-{% if order.status == 'delivered' %}success{% elif order.status == 'shipped' %}info{% else %}warning{% endif %}">{{ order.status|title }}</span></td>
+                        <td class="text-muted">{{ order.created_at|date:"M d, Y" }}</td>
+                        <td><a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-light">View</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        {% include 'components/empty_state.html' with icon='shopping-bag' title='No Orders Yet' message='Your order history will appear here.' action_url='/watches/' action_text='Browse Watches' %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

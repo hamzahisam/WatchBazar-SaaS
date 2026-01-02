@@ -1,0 +1,232 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Notifications - WatchBazaar PK{% endblock %}
+
+{% block dashboard_title %}Notifications{% endblock %}
+
+{% block dashboard_content %}
+<!-- Filters -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex gap-2">
+        <button class="btn btn-sm {% if filter == 'all' or not filter %}btn-primary{% else %}btn-outline-secondary{% endif %}" 
+                onclick="filterNotifications('all')">
+            All
+        </button>
+        <button class="btn btn-sm {% if filter == 'unread' %}btn-primary{% else %}btn-outline-secondary{% endif %}" 
+                onclick="filterNotifications('unread')">
+            Unread <span class="badge bg-danger ms-1">{{ unread_count }}</span>
+        </button>
+        <button class="btn btn-sm {% if filter == 'offers' %}btn-primary{% else %}btn-outline-secondary{% endif %}" 
+                onclick="filterNotifications('offers')">
+            Offers
+        </button>
+        <button class="btn btn-sm {% if filter == 'orders' %}btn-primary{% else %}btn-outline-secondary{% endif %}" 
+                onclick="filterNotifications('orders')">
+            Orders
+        </button>
+        <button class="btn btn-sm {% if filter == 'system' %}btn-primary{% else %}btn-outline-secondary{% endif %}" 
+                onclick="filterNotifications('system')">
+            System
+        </button>
+    </div>
+    
+    {% if notifications %}
+    <button class="btn btn-sm btn-outline-light" onclick="markAllRead()">
+        <span data-feather="check-circle" style="width:14px;height:14px;"></span> Mark all as read
+    </button>
+    {% endif %}
+</div>
+
+<!-- Notifications List -->
+<div class="card bg-dark border-0">
+    <div class="card-body p-0">
+        {% regroup notifications by created_at|date:"Y-m-d" as notifications_by_date %}
+        {% for date_group in notifications_by_date %}
+        <div class="px-4 py-2 border-bottom border-secondary" style="background:var(--wb-dark-secondary);">
+            <small class="text-muted">
+                {% if date_group.grouper == today %}
+                Today
+                {% elif date_group.grouper == yesterday %}
+                Yesterday
+                {% else %}
+                {{ date_group.grouper|date:"M d, Y" }}
+                {% endif %}
+            </small>
+        </div>
+        
+        {% for notification in date_group.list %}
+        <div class="notification-item p-4 border-bottom border-secondary d-flex align-items-start 
+                    {% if not notification.is_read %}bg-dark-unread{% endif %}"
+             data-notification-id="{{ notification.id }}"
+             onclick="handleNotificationClick({{ notification.id }}, '{{ notification.action_url }}')">
+            
+            <!-- Icon -->
+            <div class="me-3 flex-shrink-0" 
+                 style="width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+                        background:{% if notification.type == 'offer' %}rgba(198,169,97,0.1){% elif notification.type == 'order' %}rgba(40,167,69,0.1){% elif notification.type == 'message' %}rgba(23,162,184,0.1){% elif notification.type == 'system' %}rgba(108,117,125,0.1){% else %}rgba(220,53,69,0.1){% endif %};">
+                {% if notification.type == 'offer' %}
+                <span data-feather="tag" class="text-primary" style="width:20px;height:20px;"></span>
+                {% elif notification.type == 'order' %}
+                <span data-feather="shopping-bag" class="text-success" style="width:20px;height:20px;"></span>
+                {% elif notification.type == 'message' %}
+                <span data-feather="message-circle" class="text-info" style="width:20px;height:20px;"></span>
+                {% elif notification.type == 'system' %}
+                <span data-feather="bell" class="text-secondary" style="width:20px;height:20px;"></span>
+                {% elif notification.type == 'alert' %}
+                <span data-feather="alert-circle" class="text-danger" style="width:20px;height:20px;"></span>
+                {% endif %}
+            </div>
+            
+            <!-- Content -->
+            <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                    <h6 class="text-light mb-0">{{ notification.title }}</h6>
+                    <small class="text-muted ms-3">{{ notification.created_at|timesince }} ago</small>
+                </div>
+                <p class="text-muted mb-2">{{ notification.message }}</p>
+                
+                {% if notification.watch %}
+                <div class="d-flex align-items-center p-2 rounded" style="background:var(--wb-dark-secondary);display:inline-flex;">
+                    <img src="{{ notification.watch.primary_image.url }}" 
+                         alt="{{ notification.watch.model }}"
+                         style="width:32px;height:32px;border-radius:4px;object-fit:cover;" class="me-2">
+                    <span class="text-light small">{{ notification.watch.brand }} {{ notification.watch.model }}</span>
+                </div>
+                {% endif %}
+                
+                {% if notification.action_text %}
+                <div class="mt-2">
+                    <span class="text-primary small">{{ notification.action_text }} →</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Unread indicator -->
+            {% if not notification.is_read %}
+            <div class="ms-3">
+                <span class="bg-primary rounded-circle d-block" style="width:8px;height:8px;"></span>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        {% empty %}
+        <div class="text-center py-5">
+            <div class="mx-auto mb-4" 
+                 style="width:80px;height:80px;background:rgba(198,169,97,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                <span data-feather="bell-off" class="text-primary" style="width:36px;height:36px;"></span>
+            </div>
+            <h5 class="text-light mb-2">No notifications</h5>
+            <p class="text-muted">When you get notifications, they'll show up here.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if notifications.has_other_pages %}
+<nav class="mt-4">
+    <ul class="pagination justify-content-center mb-0">
+        {% if notifications.has_previous %}
+        <li class="page-item">
+            <a class="page-link bg-dark border-secondary text-light" 
+               href="?page={{ notifications.previous_page_number }}{% if filter %}&filter={{ filter }}{% endif %}">Previous</a>
+        </li>
+        {% endif %}
+        
+        {% for num in notifications.paginator.page_range %}
+        {% if notifications.number == num %}
+        <li class="page-item active">
+            <span class="page-link bg-primary border-primary text-dark">{{ num }}</span>
+        </li>
+        {% elif num > notifications.number|add:'-3' and num < notifications.number|add:'3' %}
+        <li class="page-item">
+            <a class="page-link bg-dark border-secondary text-light" 
+               href="?page={{ num }}{% if filter %}&filter={{ filter }}{% endif %}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+        
+        {% if notifications.has_next %}
+        <li class="page-item">
+            <a class="page-link bg-dark border-secondary text-light" 
+               href="?page={{ notifications.next_page_number }}{% if filter %}&filter={{ filter }}{% endif %}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+<!-- Notification Settings Link -->
+<div class="text-center mt-4">
+    <a href="{% url 'notification_settings' %}" class="text-muted small">
+        <span data-feather="settings" style="width:14px;height:14px;"></span> Manage notification preferences
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notification-item {
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    
+    .notification-item:hover {
+        background: var(--wb-dark-secondary) !important;
+    }
+    
+    .bg-dark-unread {
+        background: rgba(198, 169, 97, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function filterNotifications(filter) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('filter', filter);
+        window.location.search = params.toString();
+    }
+    
+    function handleNotificationClick(notificationId, actionUrl) {
+        // Mark as read
+        fetch(`/api/notifications/${notificationId}/read/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        }).then(() => {
+            // Navigate to action URL if provided
+            if (actionUrl) {
+                window.location.href = actionUrl;
+            } else {
+                // Just update the UI
+                const item = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                item.classList.remove('bg-dark-unread');
+                const indicator = item.querySelector('.bg-primary.rounded-circle');
+                if (indicator) indicator.remove();
+            }
+        });
+    }
+    
+    function markAllRead() {
+        fetch('/api/notifications/mark-all-read/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+</script>
+{% endblock %}

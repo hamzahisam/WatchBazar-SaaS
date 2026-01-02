@@ -1,0 +1,296 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block title %}WatchBazaar PK{% endblock %} | Premium Watch Marketplace</title>
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/img/favicons/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'assets/img/favicons/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'assets/img/favicons/favicon-16x16.png' %}">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'assets/img/favicons/favicon.ico' %}">
+    <link rel="manifest" href="{% static 'assets/img/favicons/manifest.json' %}">
+    <meta name="msapplication-TileImage" content="{% static 'assets/img/favicons/mstile-150x150.png' %}">
+    <meta name="theme-color" content="#000000">
+
+    <!-- Stylesheets -->
+    <link href="{% static 'assets/css/theme.css' %}" rel="stylesheet" />
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    {% block extra_css %}{% endblock %}
+    
+    <style>
+        /* Custom WatchBazaar Styles */
+        :root {
+            --wb-primary: #c6a961;
+            --wb-dark: #000000;
+            --wb-dark-secondary: #1a1a1a;
+            --wb-light: #ffffff;
+            --wb-muted: #999999;
+            --wb-success: #28a745;
+            --wb-warning: #ffc107;
+            --wb-danger: #dc3545;
+            --wb-info: #17a2b8;
+        }
+        
+        body {
+            font-family: 'Roboto Condensed', sans-serif;
+            background-color: var(--wb-dark);
+            color: var(--wb-light);
+        }
+        
+        .bg-dark-secondary {
+            background-color: var(--wb-dark-secondary) !important;
+        }
+        
+        .text-muted-custom {
+            color: var(--wb-muted) !important;
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 40px rgba(198, 169, 97, 0.2);
+        }
+        
+        .btn-wb-primary {
+            background-color: var(--wb-primary);
+            border-color: var(--wb-primary);
+            color: var(--wb-dark);
+        }
+        
+        .btn-wb-primary:hover {
+            background-color: #b8983f;
+            border-color: #b8983f;
+            color: var(--wb-dark);
+        }
+        
+        .form-control-dark {
+            background-color: var(--wb-dark-secondary);
+            border-color: #333;
+            color: var(--wb-light);
+        }
+        
+        .form-control-dark:focus {
+            background-color: var(--wb-dark-secondary);
+            border-color: var(--wb-primary);
+            color: var(--wb-light);
+            box-shadow: 0 0 0 0.2rem rgba(198, 169, 97, 0.25);
+        }
+        
+        .form-control-dark::placeholder {
+            color: var(--wb-muted);
+        }
+        
+        /* Sticky Footer */
+        .main-content {
+            min-height: calc(100vh - 200px);
+        }
+        
+        /* Badge Styles */
+        .badge-verified {
+            background-color: var(--wb-success);
+            color: white;
+        }
+        
+        .badge-pending {
+            background-color: var(--wb-warning);
+            color: var(--wb-dark);
+        }
+        
+        .badge-declined {
+            background-color: var(--wb-danger);
+            color: white;
+        }
+        
+        /* Price Display */
+        .price-display {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--wb-primary);
+        }
+        
+        .price-display-lg {
+            font-size: 2.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top py-3 d-block" data-navbar-on-scroll="data-navbar-on-scroll">
+        <div class="container">
+            <a class="navbar-brand d-inline-flex" href="{% url 'home' %}">
+                <span class="text-light fs-2 fw-bold ms-2">WatchBazaar</span>
+                <span class="text-primary fs-6 fw-bold align-self-end ms-1">PK</span>
+            </a>
+            <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse border-top border-lg-0 mt-4 mt-lg-0" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item px-2">
+                        <a class="nav-link fw-bold {% if request.resolver_match.url_name == 'watch_list' %}active{% endif %}" href="{% url 'watch_list' %}">BROWSE</a>
+                    </li>
+                    <li class="nav-item px-2">
+                        <a class="nav-link fw-bold" href="{% url 'home' %}#collections">COLLECTIONS</a>
+                    </li>
+                    <li class="nav-item px-2">
+                        <a class="nav-link fw-bold" href="{% url 'how_it_works' %}">HOW IT WORKS</a>
+                    </li>
+                    <li class="nav-item px-2">
+                        <a class="nav-link fw-bold" href="{% url 'about' %}">ABOUT</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    {% if user.is_authenticated %}
+                        <!-- Notifications -->
+                        <a href="{% url 'notifications' %}" class="text-light me-3 position-relative">
+                            <span data-feather="bell"></span>
+                            {% if unread_notifications_count %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                {{ unread_notifications_count }}
+                            </span>
+                            {% endif %}
+                        </a>
+                        <!-- Wishlist -->
+                        <a href="{% url 'wishlist' %}" class="text-light me-3">
+                            <span data-feather="heart"></span>
+                        </a>
+                        <!-- Cart -->
+                        <a href="{% url 'cart' %}" class="text-light me-3 position-relative">
+                            <span data-feather="shopping-cart"></span>
+                            {% if cart_count %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
+                                {{ cart_count }}
+                            </span>
+                            {% endif %}
+                        </a>
+                        <!-- User Dropdown -->
+                        <div class="dropdown">
+                            <a class="text-light dropdown-toggle" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span data-feather="user"></span>
+                                <span class="ms-2 d-none d-lg-inline">{{ user.first_name|default:user.email }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="userDropdown">
+                                {% if user.is_seller %}
+                                <li><a class="dropdown-item" href="{% url 'seller_dashboard' %}">Seller Dashboard</a></li>
+                                <li><a class="dropdown-item" href="{% url 'my_listings' %}">My Listings</a></li>
+                                <li><a class="dropdown-item" href="{% url 'offers_received' %}">Offers Received</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                {% else %}
+                                <li><a class="dropdown-item" href="{% url 'buyer_dashboard' %}">My Dashboard</a></li>
+                                <li><a class="dropdown-item" href="{% url 'my_offers' %}">My Offers</a></li>
+                                {% endif %}
+                                <li><a class="dropdown-item" href="{% url 'my_orders' %}">My Orders</a></li>
+                                <li><a class="dropdown-item" href="{% url 'account_settings' %}">Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm me-2">LOGIN</a>
+                        <a href="{% url 'signup' %}" class="btn btn-primary btn-sm">SIGN UP</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content" id="top" style="padding-top: 80px;">
+        {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-6 bg-black">
+        <div class="container">
+            <div class="row">
+                <div class="col-6 col-sm-4 col-xl-3 mb-3">
+                    <h4 class="lh-lg fw-bold text-light">WATCHBAZAAR PK</h4>
+                    <p class="text-muted-custom">Pakistan's Premier Watch Marketplace</p>
+                </div>
+                <div class="col-6 col-sm-4 col-xl-3 mb-3">
+                    <h5 class="lh-lg fw-bold text-light">QUICK LINKS</h5>
+                    <ul class="list-unstyled mb-md-4 mb-lg-0">
+                        <li class="lh-lg"><a class="text-800 text-decoration-none text-uppercase fw-bold" href="{% url 'watch_list' %}">Browse Watches</a></li>
+                        <li class="lh-lg"><a class="text-800 text-decoration-none text-uppercase fw-bold" href="{% url 'how_it_works' %}">How It Works</a></li>
+                        <li class="lh-lg"><a class="text-800 text-decoration-none text-uppercase fw-bold" href="{% url 'faq' %}">FAQ</a></li>
+                        <li class="lh-lg"><a class="text-800 text-decoration-none text-uppercase fw-bold" href="{% url 'about' %}">About Us</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-sm-4 col-xl-3 mb-3">
+                    <h5 class="lh-lg fw-bold text-light">SUPPORT</h5>
+                    <ul class="list-unstyled mb-md-4 mb-lg-0">
+                        <li class="lh-lg"><a class="text-800 text-decoration-none text-uppercase fw-bold" href="{% url 'contact' %}">Contact Us</a></li>
+                        <li class="lh-lg"><a class="text-800 text-decoration-none text-uppercase fw-bold" href="{% url 'terms' %}">Terms & Conditions</a></li>
+                        <li class="lh-lg"><a class="text-800 text-decoration-none text-uppercase fw-bold" href="{% url 'privacy' %}">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="col-12 col-xl-3">
+                    <h5 class="lh-lg fw-bold text-light text-uppercase">Newsletter</h5>
+                    <form class="row g-2" method="post" action="{% url 'newsletter_signup' %}">
+                        {% csrf_token %}
+                        <div class="col-8">
+                            <input class="form-control form-control-dark" type="email" name="email" placeholder="Email address" required>
+                        </div>
+                        <div class="col-4">
+                            <button class="btn btn-primary w-100" type="submit">Join</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="border-bottom border-700 mt-4"></div>
+            <div class="row flex-center my-3">
+                <div class="col-md-6 order-1 order-md-0">
+                    <p class="my-2 text-800 text-center text-md-start">
+                        © {% now "Y" %} WatchBazaar PK. All rights reserved.
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <div class="text-center text-md-end">
+                        <a href="#!" class="text-light me-3"><span data-feather="facebook"></span></a>
+                        <a href="#!" class="text-light me-3"><span data-feather="instagram"></span></a>
+                        <a href="#!" class="text-light me-3"><span data-feather="youtube"></span></a>
+                        <a href="#!" class="text-light"><span data-feather="twitter"></span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScripts -->
+    <script src="{% static 'vendors/@popperjs/popper.min.js' %}"></script>
+    <script src="{% static 'vendors/bootstrap/bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/is/is.min.js' %}"></script>
+    <script src="{% static 'vendors/feather-icons/feather.min.js' %}"></script>
+    <script>
+        feather.replace();
+    </script>
+    <script src="{% static 'assets/js/theme.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

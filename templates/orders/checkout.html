@@ -1,0 +1,501 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Checkout - WatchBazaar PK{% endblock %}
+
+{% block extra_css %}
+<style>
+    .checkout-header {
+        background: linear-gradient(180deg, rgba(198, 169, 97, 0.1) 0%, rgba(0,0,0,0) 100%);
+        padding: 40px 0;
+    }
+    
+    .checkout-step {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 40px;
+    }
+    
+    .step-number {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background-color: #333;
+        color: #666;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .step-number.active {
+        background-color: var(--wb-primary);
+        color: #000;
+    }
+    
+    .step-number.completed {
+        background-color: #28a745;
+        color: #fff;
+    }
+    
+    .step-text {
+        margin-left: 10px;
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .step-text.active {
+        color: var(--wb-primary);
+    }
+    
+    .step-line {
+        width: 80px;
+        height: 2px;
+        background-color: #333;
+        margin: 0 20px;
+    }
+    
+    .step-line.completed {
+        background-color: #28a745;
+    }
+    
+    .checkout-card {
+        background-color: #1a1a1a;
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 25px;
+    }
+    
+    .section-title {
+        color: var(--wb-primary);
+        font-size: 1rem;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .form-label {
+        color: #ccc;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+    
+    .form-control, .form-select {
+        background-color: #2a2a2a;
+        border: 1px solid #444;
+        color: #fff;
+        padding: 12px 16px;
+        border-radius: 8px;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        background-color: #2a2a2a;
+        border-color: var(--wb-primary);
+        color: #fff;
+        box-shadow: 0 0 0 3px rgba(198, 169, 97, 0.2);
+    }
+    
+    .form-control::placeholder {
+        color: #666;
+    }
+    
+    .order-item {
+        display: flex;
+        padding: 15px 0;
+        border-bottom: 1px solid #333;
+    }
+    
+    .order-item:last-child {
+        border-bottom: none;
+    }
+    
+    .order-item-image {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    
+    .payment-option {
+        background-color: #2a2a2a;
+        border: 2px solid #444;
+        border-radius: 10px;
+        padding: 20px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .payment-option:hover {
+        border-color: #555;
+    }
+    
+    .payment-option.selected {
+        border-color: var(--wb-primary);
+        background-color: rgba(198, 169, 97, 0.1);
+    }
+    
+    .payment-option input {
+        display: none;
+    }
+    
+    .payment-icon {
+        width: 50px;
+        height: 35px;
+        object-fit: contain;
+    }
+    
+    .order-summary-sticky {
+        position: sticky;
+        top: 100px;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+    }
+    
+    .meeting-location {
+        background-color: #2a2a2a;
+        border-radius: 10px;
+        padding: 20px;
+    }
+    
+    .meeting-location iframe {
+        border-radius: 8px;
+    }
+    
+    @media (max-width: 767px) {
+        .checkout-step {
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .step-line {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="checkout-header">
+    <div class="container">
+        <h1 class="display-5 text-center text-light mb-2">Checkout</h1>
+        
+        <!-- Checkout Steps -->
+        <div class="checkout-step">
+            <div class="d-flex align-items-center">
+                <div class="step-number completed">
+                    <span data-feather="check" style="width:16px;height:16px;"></span>
+                </div>
+                <span class="step-text">Cart</span>
+            </div>
+            <div class="step-line completed"></div>
+            <div class="d-flex align-items-center">
+                <div class="step-number active">2</div>
+                <span class="step-text active">Details</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="d-flex align-items-center">
+                <div class="step-number">3</div>
+                <span class="step-text">Confirm</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="pb-6">
+    <div class="container">
+        <form id="checkoutForm" action="{% url 'checkout' %}" method="post">
+            {% csrf_token %}
+            
+            <div class="row">
+                <!-- Left Column: Forms -->
+                <div class="col-lg-8">
+                    <!-- Contact Information -->
+                    <div class="checkout-card">
+                        <h5 class="section-title">
+                            <span data-feather="user" style="width:18px;height:18px;"></span> Contact Information
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" class="form-control" name="full_name" 
+                                       value="{{ user.get_full_name }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" name="phone" 
+                                       value="{{ user.profile.phone }}" placeholder="+92 XXX XXXXXXX" required>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Email Address</label>
+                                <input type="email" class="form-control" name="email" 
+                                       value="{{ user.email }}" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Transaction Method -->
+                    {% if has_delivery_items %}
+                    <div class="checkout-card">
+                        <h5 class="section-title">
+                            <span data-feather="truck" style="width:18px;height:18px;"></span> Delivery Address
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Street Address</label>
+                                <input type="text" class="form-control" name="address" 
+                                       placeholder="House/Building number and street name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">City</label>
+                                <select class="form-select" name="city" required>
+                                    <option value="">Select city</option>
+                                    <option value="Karachi">Karachi</option>
+                                    <option value="Lahore">Lahore</option>
+                                    <option value="Islamabad">Islamabad</option>
+                                    <option value="Rawalpindi">Rawalpindi</option>
+                                    <option value="Faisalabad">Faisalabad</option>
+                                    <option value="Multan">Multan</option>
+                                    <option value="Peshawar">Peshawar</option>
+                                    <option value="Quetta">Quetta</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Postal Code (Optional)</label>
+                                <input type="text" class="form-control" name="postal_code" 
+                                       placeholder="XXXXX">
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if has_meeting_items %}
+                    <div class="checkout-card">
+                        <h5 class="section-title">
+                            <span data-feather="map-pin" style="width:18px;height:18px;"></span> Meeting Location
+                        </h5>
+                        
+                        <div class="meeting-location">
+                            <h6 class="text-light mb-3">WatchBazaar Office - Karachi</h6>
+                            <p class="text-muted mb-3">
+                                <span data-feather="map" style="width:14px;height:14px;"></span>
+                                Plot 123, Block 7, Clifton, Karachi
+                            </p>
+                            <p class="text-muted mb-3">
+                                <span data-feather="clock" style="width:14px;height:14px;"></span>
+                                Mon - Sat: 11:00 AM - 8:00 PM
+                            </p>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Preferred Meeting Date</label>
+                                <input type="date" class="form-control" name="meeting_date" 
+                                       min="{{ min_meeting_date }}" required>
+                            </div>
+                            <div class="mb-0">
+                                <label class="form-label">Preferred Time Slot</label>
+                                <select class="form-select" name="meeting_time" required>
+                                    <option value="">Select time slot</option>
+                                    <option value="11:00">11:00 AM - 12:00 PM</option>
+                                    <option value="12:00">12:00 PM - 1:00 PM</option>
+                                    <option value="14:00">2:00 PM - 3:00 PM</option>
+                                    <option value="15:00">3:00 PM - 4:00 PM</option>
+                                    <option value="16:00">4:00 PM - 5:00 PM</option>
+                                    <option value="17:00">5:00 PM - 6:00 PM</option>
+                                    <option value="18:00">6:00 PM - 7:00 PM</option>
+                                    <option value="19:00">7:00 PM - 8:00 PM</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Payment Method -->
+                    <div class="checkout-card">
+                        <h5 class="section-title">
+                            <span data-feather="credit-card" style="width:18px;height:18px;"></span> Payment Method
+                        </h5>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="payment-option d-block selected" data-method="cash">
+                                    <input type="radio" name="payment_method" value="cash" checked>
+                                    <div class="text-center">
+                                        <span data-feather="dollar-sign" class="text-primary mb-2" style="width:28px;height:28px;"></span>
+                                        <p class="text-light mb-1">Cash on Delivery</p>
+                                        <small class="text-muted">Pay at meeting/delivery</small>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="payment-option d-block" data-method="bank">
+                                    <input type="radio" name="payment_method" value="bank">
+                                    <div class="text-center">
+                                        <span data-feather="briefcase" class="text-primary mb-2" style="width:28px;height:28px;"></span>
+                                        <p class="text-light mb-1">Bank Transfer</p>
+                                        <small class="text-muted">Direct bank deposit</small>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="payment-option d-block" data-method="jazzcash">
+                                    <input type="radio" name="payment_method" value="jazzcash">
+                                    <div class="text-center">
+                                        <span data-feather="smartphone" class="text-primary mb-2" style="width:28px;height:28px;"></span>
+                                        <p class="text-light mb-1">JazzCash</p>
+                                        <small class="text-muted">Mobile wallet</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Bank Transfer Details -->
+                        <div id="bankDetails" class="mt-4 d-none">
+                            <div class="bg-black rounded p-3">
+                                <h6 class="text-light mb-3">Bank Account Details</h6>
+                                <p class="text-muted mb-1">Bank: <strong class="text-light">Meezan Bank</strong></p>
+                                <p class="text-muted mb-1">Account Title: <strong class="text-light">WatchBazaar PK</strong></p>
+                                <p class="text-muted mb-0">Account Number: <strong class="text-light">01234567890123</strong></p>
+                            </div>
+                            <div class="mt-3">
+                                <label class="form-label">Transaction Reference</label>
+                                <input type="text" class="form-control" name="transaction_ref" 
+                                       placeholder="Enter your payment reference number">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Additional Notes -->
+                    <div class="checkout-card">
+                        <h5 class="section-title">
+                            <span data-feather="message-square" style="width:18px;height:18px;"></span> Additional Notes
+                        </h5>
+                        <textarea class="form-control" name="notes" rows="3" 
+                                  placeholder="Any special instructions or requests..."></textarea>
+                    </div>
+                </div>
+                
+                <!-- Right Column: Order Summary -->
+                <div class="col-lg-4">
+                    <div class="checkout-card order-summary-sticky">
+                        <h5 class="text-light mb-4">Order Summary</h5>
+                        
+                        <!-- Order Items -->
+                        <div class="mb-4">
+                            {% for item in cart_items %}
+                            <div class="order-item">
+                                <img src="{{ item.watch.primary_image.url }}" alt="{{ item.watch.model }}" 
+                                     class="order-item-image me-3">
+                                <div class="flex-grow-1">
+                                    <p class="text-primary small mb-0">{{ item.watch.brand }}</p>
+                                    <p class="text-light mb-0">{{ item.watch.model }}</p>
+                                    <p class="text-muted small mb-0">
+                                        {% if item.transaction_method == 'meeting' %}Meeting{% else %}Delivery{% endif %}
+                                    </p>
+                                </div>
+                                <div class="text-end">
+                                    <p class="text-primary fw-bold mb-0">Rs. {{ item.price|floatformat:0|intcomma }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Totals -->
+                        <div class="border-top border-secondary pt-3">
+                            <div class="summary-row">
+                                <span class="text-muted">Subtotal</span>
+                                <span class="text-light">Rs. {{ subtotal|floatformat:0|intcomma }}</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="text-muted">Delivery</span>
+                                <span class="text-light">
+                                    {% if delivery_fee > 0 %}Rs. {{ delivery_fee|floatformat:0|intcomma }}{% else %}Free{% endif %}
+                                </span>
+                            </div>
+                            {% if discount > 0 %}
+                            <div class="summary-row">
+                                <span class="text-success">Discount</span>
+                                <span class="text-success">-Rs. {{ discount|floatformat:0|intcomma }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="summary-row border-top border-secondary pt-3 mt-2">
+                                <span class="text-light fw-bold">Total</span>
+                                <span class="text-primary fw-bold" style="font-size:1.3rem;">
+                                    Rs. {{ total|floatformat:0|intcomma }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Terms -->
+                        <div class="form-check mt-4">
+                            <input class="form-check-input" type="checkbox" id="acceptTerms" required>
+                            <label class="form-check-label text-muted small" for="acceptTerms">
+                                I agree to the <a href="{% url 'terms' %}" class="text-primary">Terms & Conditions</a> 
+                                and <a href="{% url 'privacy' %}" class="text-primary">Privacy Policy</a>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mt-4">
+                            <span data-feather="lock" style="width:18px;height:18px;"></span> Place Order
+                        </button>
+                        
+                        <p class="text-muted small text-center mt-3 mb-0">
+                            <span data-feather="shield" style="width:12px;height:12px;"></span>
+                            Your transaction is secured by WatchBazaar
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Payment method selection
+    document.querySelectorAll('.payment-option').forEach(option => {
+        option.addEventListener('click', function() {
+            document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+            this.classList.add('selected');
+            this.querySelector('input').checked = true;
+            
+            // Show/hide bank details
+            const bankDetails = document.getElementById('bankDetails');
+            if (this.dataset.method === 'bank') {
+                bankDetails.classList.remove('d-none');
+            } else {
+                bankDetails.classList.add('d-none');
+            }
+        });
+    });
+    
+    // Form validation
+    document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+        const acceptTerms = document.getElementById('acceptTerms');
+        if (!acceptTerms.checked) {
+            e.preventDefault();
+            alert('Please accept the Terms & Conditions to proceed');
+            return;
+        }
+    });
+    
+    // Set minimum date for meeting
+    const meetingDateInput = document.querySelector('input[name="meeting_date"]');
+    if (meetingDateInput) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        meetingDateInput.min = tomorrow.toISOString().split('T')[0];
+    }
+</script>
+{% endblock %}

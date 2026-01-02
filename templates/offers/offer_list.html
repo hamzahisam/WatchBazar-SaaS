@@ -1,0 +1,391 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Received Offers - Seller Dashboard{% endblock %}
+
+{% block dashboard_title %}Received Offers{% endblock %}
+
+{% block dashboard_content %}
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-warning bg-opacity-10">
+                <span data-feather="inbox" class="text-warning"></span>
+            </div>
+            <div>
+                <p class="stat-label">Pending</p>
+                <h3 class="stat-value">{{ pending_count }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-success bg-opacity-10">
+                <span data-feather="check-circle" class="text-success"></span>
+            </div>
+            <div>
+                <p class="stat-label">Accepted</p>
+                <h3 class="stat-value">{{ accepted_count }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-danger bg-opacity-10">
+                <span data-feather="x-circle" class="text-danger"></span>
+            </div>
+            <div>
+                <p class="stat-label">Declined</p>
+                <h3 class="stat-value">{{ declined_count }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-primary bg-opacity-10">
+                <span data-feather="repeat" class="text-primary"></span>
+            </div>
+            <div>
+                <p class="stat-label">Countered</p>
+                <h3 class="stat-value">{{ countered_count }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card bg-dark border-0 mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label text-muted small">Filter by Status</label>
+                <select class="form-select bg-dark border-secondary text-light" id="statusFilter">
+                    <option value="">All Offers</option>
+                    <option value="pending">Pending</option>
+                    <option value="accepted">Accepted</option>
+                    <option value="declined">Declined</option>
+                    <option value="countered">Countered</option>
+                    <option value="expired">Expired</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-muted small">Filter by Listing</label>
+                <select class="form-select bg-dark border-secondary text-light" id="listingFilter">
+                    <option value="">All Listings</option>
+                    {% for watch in user_watches %}
+                    <option value="{{ watch.id }}">{{ watch.brand }} {{ watch.model }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-muted small">Sort By</label>
+                <select class="form-select bg-dark border-secondary text-light" id="sortFilter">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="highest">Highest Amount</option>
+                    <option value="lowest">Lowest Amount</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-outline-light w-100" onclick="applyFilters()">
+                    <span data-feather="filter" style="width:16px;height:16px;"></span> Apply Filters
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Offers List -->
+<div class="offers-list">
+    {% if offers %}
+    {% for offer in offers %}
+    <div class="offer-item card bg-dark border-0 mb-3" data-offer-id="{{ offer.id }}">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <!-- Watch Info -->
+                <div class="col-md-3">
+                    <div class="d-flex align-items-center">
+                        <img src="{{ offer.watch.primary_image.url }}" alt="{{ offer.watch.model }}" 
+                             class="rounded me-3" style="width:60px;height:60px;object-fit:cover;">
+                        <div>
+                            <p class="text-primary mb-0 small">{{ offer.watch.brand }}</p>
+                            <a href="{% url 'watch_detail' offer.watch.id %}" class="text-light text-decoration-none">
+                                {{ offer.watch.model }}
+                            </a>
+                            <p class="text-muted small mb-0">Asking: Rs. {{ offer.watch.price|floatformat:0|intcomma }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Offer Details -->
+                <div class="col-md-2 mt-3 mt-md-0">
+                    <p class="text-muted small mb-1">Offer Amount</p>
+                    <h5 class="text-primary mb-0">Rs. {{ offer.amount|floatformat:0|intcomma }}</h5>
+                    <small class="text-muted">{{ offer.percentage_of_asking }}% of asking</small>
+                </div>
+                
+                <!-- Buyer Info -->
+                <div class="col-md-2 mt-3 mt-md-0">
+                    <p class="text-muted small mb-1">From</p>
+                    <p class="text-light mb-0">Buyer #{{ offer.buyer.id }}</p>
+                    <small class="text-muted">{{ offer.created_at|timesince }} ago</small>
+                </div>
+                
+                <!-- Method -->
+                <div class="col-md-2 mt-3 mt-md-0">
+                    <p class="text-muted small mb-1">Method</p>
+                    <span class="badge {% if offer.transaction_method == 'meeting' %}bg-success{% else %}bg-info{% endif %}">
+                        {% if offer.transaction_method == 'meeting' %}
+                        <span data-feather="map-pin" style="width:12px;height:12px;"></span> Meeting
+                        {% else %}
+                        <span data-feather="truck" style="width:12px;height:12px;"></span> Delivery
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <!-- Status -->
+                <div class="col-md-1 mt-3 mt-md-0">
+                    <span class="badge 
+                        {% if offer.status == 'pending' %}bg-warning text-dark
+                        {% elif offer.status == 'accepted' %}bg-success
+                        {% elif offer.status == 'declined' %}bg-danger
+                        {% elif offer.status == 'countered' %}bg-primary
+                        {% else %}bg-secondary{% endif %}">
+                        {{ offer.status|title }}
+                    </span>
+                </div>
+                
+                <!-- Actions -->
+                <div class="col-md-2 mt-3 mt-md-0 text-md-end">
+                    {% if offer.status == 'pending' %}
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-success" onclick="acceptOffer({{ offer.id }})" title="Accept">
+                            <span data-feather="check" style="width:14px;height:14px;"></span>
+                        </button>
+                        <button class="btn btn-primary" onclick="openCounterModal({{ offer.id }}, {{ offer.amount }}, {{ offer.watch.price }})" title="Counter">
+                            <span data-feather="edit-2" style="width:14px;height:14px;"></span>
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="declineOffer({{ offer.id }})" title="Decline">
+                            <span data-feather="x" style="width:14px;height:14px;"></span>
+                        </button>
+                    </div>
+                    {% elif offer.status == 'accepted' %}
+                    <a href="{% url 'order_detail' offer.order.id %}" class="btn btn-sm btn-outline-primary">
+                        View Order
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if offer.message %}
+            <div class="mt-3 pt-3 border-top border-secondary">
+                <p class="text-muted small mb-1">Buyer's Message:</p>
+                <p class="text-light mb-0">{{ offer.message }}</p>
+            </div>
+            {% endif %}
+            
+            {% if offer.counter_amount %}
+            <div class="mt-3 pt-3 border-top border-secondary">
+                <p class="text-primary small mb-1">Your Counter Offer:</p>
+                <p class="text-light mb-0">Rs. {{ offer.counter_amount|floatformat:0|intcomma }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    
+    <!-- Pagination -->
+    {% if offers.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if offers.has_previous %}
+            <li class="page-item">
+                <a class="page-link bg-dark border-secondary text-light" href="?page={{ offers.previous_page_number }}">
+                    <span data-feather="chevron-left" style="width:16px;height:16px;"></span>
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for num in offers.paginator.page_range %}
+            <li class="page-item {% if offers.number == num %}active{% endif %}">
+                <a class="page-link {% if offers.number == num %}bg-primary border-primary text-dark{% else %}bg-dark border-secondary text-light{% endif %}" 
+                   href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endfor %}
+            
+            {% if offers.has_next %}
+            <li class="page-item">
+                <a class="page-link bg-dark border-secondary text-light" href="?page={{ offers.next_page_number }}">
+                    <span data-feather="chevron-right" style="width:16px;height:16px;"></span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <span data-feather="inbox" style="width:60px;height:60px;color:#444;"></span>
+        </div>
+        <h5 class="text-light mb-2">No Offers Yet</h5>
+        <p class="text-muted">When buyers make offers on your listings, they'll appear here.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Counter Offer Modal -->
+<div class="modal fade" id="counterModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border-0">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-light">Counter Offer</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="counterForm">
+                    <input type="hidden" name="offer_id" id="counterOfferId">
+                    
+                    <div class="bg-black rounded p-3 mb-4">
+                        <div class="row text-center">
+                            <div class="col-6 border-end border-secondary">
+                                <p class="text-muted small mb-1">Buyer's Offer</p>
+                                <h5 class="text-light mb-0" id="counterBuyerOffer">Rs. 0</h5>
+                            </div>
+                            <div class="col-6">
+                                <p class="text-muted small mb-1">Your Asking Price</p>
+                                <h5 class="text-primary mb-0" id="counterAskingPrice">Rs. 0</h5>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label text-muted">Your Counter Amount</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-black border-secondary text-primary">Rs.</span>
+                            <input type="number" class="form-control bg-dark border-secondary text-light" 
+                                   id="counterAmount" name="counter_amount" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Message (Optional)</label>
+                        <textarea class="form-control bg-dark border-secondary text-light" 
+                                  id="counterMessage" name="message" rows="2" 
+                                  placeholder="Add a message to your counter offer..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitCounter()">
+                    Send Counter Offer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function acceptOffer(offerId) {
+        if (!confirm('Are you sure you want to accept this offer? The listing will be marked as sold.')) {
+            return;
+        }
+        
+        fetch(`/offers/${offerId}/accept/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Failed to accept offer');
+            }
+        });
+    }
+    
+    function declineOffer(offerId) {
+        if (!confirm('Are you sure you want to decline this offer?')) {
+            return;
+        }
+        
+        fetch(`/offers/${offerId}/decline/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Failed to decline offer');
+            }
+        });
+    }
+    
+    function openCounterModal(offerId, buyerOffer, askingPrice) {
+        document.getElementById('counterOfferId').value = offerId;
+        document.getElementById('counterBuyerOffer').textContent = 'Rs. ' + buyerOffer.toLocaleString();
+        document.getElementById('counterAskingPrice').textContent = 'Rs. ' + askingPrice.toLocaleString();
+        document.getElementById('counterAmount').value = '';
+        document.getElementById('counterMessage').value = '';
+        
+        new bootstrap.Modal(document.getElementById('counterModal')).show();
+    }
+    
+    function submitCounter() {
+        const offerId = document.getElementById('counterOfferId').value;
+        const amount = document.getElementById('counterAmount').value;
+        const message = document.getElementById('counterMessage').value;
+        
+        if (!amount) {
+            alert('Please enter a counter amount');
+            return;
+        }
+        
+        fetch(`/offers/${offerId}/counter/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ amount, message })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Failed to send counter offer');
+            }
+        });
+    }
+    
+    function applyFilters() {
+        const status = document.getElementById('statusFilter').value;
+        const listing = document.getElementById('listingFilter').value;
+        const sort = document.getElementById('sortFilter').value;
+        
+        const params = new URLSearchParams();
+        if (status) params.set('status', status);
+        if (listing) params.set('listing', listing);
+        if (sort) params.set('sort', sort);
+        
+        window.location.search = params.toString();
+    }
+</script>
+{% endblock %}

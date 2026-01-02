@@ -1,0 +1,228 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block title %}WatchBazaar PK{% endblock %}</title>
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/img/favicons/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'assets/img/favicons/favicon-32x32.png' %}">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'assets/img/favicons/favicon.ico' %}">
+    <meta name="theme-color" content="#000000">
+
+    <!-- Stylesheets -->
+    <link href="{% static 'assets/css/theme.css' %}" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --wb-primary: #c6a961;
+            --wb-dark: #000000;
+            --wb-dark-secondary: #1a1a1a;
+            --wb-light: #ffffff;
+            --wb-muted: #999999;
+        }
+        
+        body {
+            font-family: 'Roboto Condensed', sans-serif;
+            background-color: var(--wb-dark);
+            color: var(--wb-light);
+            min-height: 100vh;
+        }
+        
+        .auth-container {
+            min-height: 100vh;
+        }
+        
+        .auth-form-section {
+            background-color: var(--wb-dark-secondary);
+        }
+        
+        .auth-hero-section {
+            background: linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%),
+                        url("{% static 'assets/img/gallery/header-bg.png' %}");
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .form-control-dark {
+            background-color: #2a2a2a;
+            border-color: #333;
+            color: var(--wb-light);
+        }
+        
+        .form-control-dark:focus {
+            background-color: #2a2a2a;
+            border-color: var(--wb-primary);
+            color: var(--wb-light);
+            box-shadow: 0 0 0 0.2rem rgba(198, 169, 97, 0.25);
+        }
+        
+        .form-control-dark::placeholder {
+            color: var(--wb-muted);
+        }
+        
+        .form-floating > .form-control-dark:focus ~ label,
+        .form-floating > .form-control-dark:not(:placeholder-shown) ~ label {
+            color: var(--wb-primary);
+        }
+        
+        .form-floating > label {
+            color: var(--wb-muted);
+        }
+        
+        .btn-wb-primary {
+            background-color: var(--wb-primary);
+            border-color: var(--wb-primary);
+            color: var(--wb-dark);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-wb-primary:hover {
+            background-color: #b8983f;
+            border-color: #b8983f;
+            color: var(--wb-dark);
+        }
+        
+        .auth-link {
+            color: var(--wb-primary);
+            text-decoration: none;
+        }
+        
+        .auth-link:hover {
+            color: #b8983f;
+            text-decoration: underline;
+        }
+        
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .benefit-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(198, 169, 97, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            color: var(--wb-primary);
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+        }
+        
+        .step-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #333;
+            color: var(--wb-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        
+        .step.active .step-number {
+            background-color: var(--wb-primary);
+            color: var(--wb-dark);
+        }
+        
+        .step.completed .step-number {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .step-line {
+            width: 60px;
+            height: 2px;
+            background-color: #333;
+            margin: 0 10px;
+        }
+        
+        .step.completed + .step-line,
+        .step.active + .step-line {
+            background-color: var(--wb-primary);
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--wb-muted);
+            z-index: 10;
+        }
+        
+        .password-strength {
+            height: 4px;
+            border-radius: 2px;
+            margin-top: 8px;
+            transition: all 0.3s;
+        }
+        
+        .password-strength.weak { background-color: #dc3545; width: 33%; }
+        .password-strength.medium { background-color: #ffc107; width: 66%; }
+        .password-strength.strong { background-color: #28a745; width: 100%; }
+        
+        .otp-input {
+            width: 50px;
+            height: 60px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background-color: #2a2a2a;
+            border: 2px solid #333;
+            color: var(--wb-light);
+            border-radius: 8px;
+        }
+        
+        .otp-input:focus {
+            border-color: var(--wb-primary);
+            outline: none;
+        }
+        
+        .form-check-input:checked {
+            background-color: var(--wb-primary);
+            border-color: var(--wb-primary);
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    {% block content %}{% endblock %}
+
+    <!-- JavaScripts -->
+    <script src="{% static 'vendors/@popperjs/popper.min.js' %}"></script>
+    <script src="{% static 'vendors/bootstrap/bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/feather-icons/feather.min.js' %}"></script>
+    <script>
+        feather.replace();
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

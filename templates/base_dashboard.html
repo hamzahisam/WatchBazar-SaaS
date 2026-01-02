@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .dashboard-sidebar {
+        background-color: #1a1a1a;
+        min-height: calc(100vh - 80px);
+        position: sticky;
+        top: 80px;
+    }
+    
+    .sidebar-nav .nav-link {
+        color: #999;
+        padding: 12px 20px;
+        border-left: 3px solid transparent;
+        transition: all 0.3s;
+    }
+    
+    .sidebar-nav .nav-link:hover {
+        color: #fff;
+        background-color: rgba(255,255,255,0.05);
+    }
+    
+    .sidebar-nav .nav-link.active {
+        color: var(--wb-primary);
+        border-left-color: var(--wb-primary);
+        background-color: rgba(198, 169, 97, 0.1);
+    }
+    
+    .sidebar-nav .nav-link svg {
+        margin-right: 10px;
+        width: 18px;
+        height: 18px;
+    }
+    
+    .dashboard-content {
+        padding: 30px;
+    }
+    
+    .stat-card {
+        background-color: #1a1a1a;
+        border-radius: 12px;
+        padding: 24px;
+        transition: all 0.3s;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--wb-primary);
+    }
+    
+    .stat-label {
+        color: #999;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+    }
+    
+    .activity-item {
+        padding: 15px;
+        border-bottom: 1px solid #333;
+        transition: background-color 0.3s;
+    }
+    
+    .activity-item:hover {
+        background-color: rgba(255,255,255,0.02);
+    }
+    
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+    
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .activity-icon.offer { background-color: rgba(198, 169, 97, 0.2); color: var(--wb-primary); }
+    .activity-icon.order { background-color: rgba(40, 167, 69, 0.2); color: #28a745; }
+    .activity-icon.message { background-color: rgba(23, 162, 184, 0.2); color: #17a2b8; }
+    
+    @media (max-width: 991px) {
+        .dashboard-sidebar {
+            position: fixed;
+            left: -280px;
+            width: 280px;
+            z-index: 1050;
+            transition: left 0.3s;
+        }
+        
+        .dashboard-sidebar.show {
+            left: 0;
+        }
+        
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1040;
+        }
+        
+        .sidebar-overlay.show {
+            display: block;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="row g-0">
+        <!-- Sidebar Overlay (Mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-2 dashboard-sidebar" id="dashboardSidebar">
+            <nav class="sidebar-nav py-4">
+                {% block sidebar_nav %}
+                <!-- Default buyer sidebar - override in child templates -->
+                <a href="{% url 'buyer_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'buyer_dashboard' %}active{% endif %}">
+                    <span data-feather="grid"></span> Dashboard
+                </a>
+                <a href="{% url 'my_offers' %}" class="nav-link {% if request.resolver_match.url_name == 'my_offers' %}active{% endif %}">
+                    <span data-feather="tag"></span> My Offers
+                </a>
+                <a href="{% url 'my_orders' %}" class="nav-link {% if request.resolver_match.url_name == 'my_orders' %}active{% endif %}">
+                    <span data-feather="package"></span> My Orders
+                </a>
+                <a href="{% url 'wishlist' %}" class="nav-link {% if request.resolver_match.url_name == 'wishlist' %}active{% endif %}">
+                    <span data-feather="heart"></span> Wishlist
+                </a>
+                <a href="{% url 'saved_searches' %}" class="nav-link {% if request.resolver_match.url_name == 'saved_searches' %}active{% endif %}">
+                    <span data-feather="search"></span> Saved Searches
+                </a>
+                <a href="{% url 'messages' %}" class="nav-link {% if request.resolver_match.url_name == 'messages' %}active{% endif %}">
+                    <span data-feather="message-circle"></span> Messages
+                </a>
+                <hr class="border-secondary mx-3">
+                <a href="{% url 'account_settings' %}" class="nav-link {% if request.resolver_match.url_name == 'account_settings' %}active{% endif %}">
+                    <span data-feather="settings"></span> Settings
+                </a>
+                <a href="{% url 'logout' %}" class="nav-link text-danger">
+                    <span data-feather="log-out"></span> Logout
+                </a>
+                {% endblock %}
+            </nav>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-10">
+            <!-- Mobile Sidebar Toggle -->
+            <div class="d-lg-none p-3 bg-dark border-bottom border-secondary">
+                <button class="btn btn-outline-light btn-sm" id="sidebarToggle">
+                    <span data-feather="menu"></span> Menu
+                </button>
+            </div>
+            
+            <div class="dashboard-content">
+                {% block dashboard_content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Mobile sidebar toggle
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('dashboardSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+        });
+    }
+    
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
+        });
+    }
+</script>
+{% block dashboard_js %}{% endblock %}
+{% endblock %}

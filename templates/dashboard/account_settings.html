@@ -1,0 +1,99 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Account Settings - WatchBazaar PK{% endblock %}
+
+{% block dashboard_title %}Account Settings{% endblock %}
+
+{% block dashboard_content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <!-- Profile -->
+        <div class="card bg-dark border-0 mb-4">
+            <div class="card-header bg-transparent border-0">
+                <h5 class="text-light mb-0">Profile Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">First Name</label>
+                            <input type="text" class="form-control bg-dark border-secondary text-light" name="first_name" value="{{ user.first_name }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Last Name</label>
+                            <input type="text" class="form-control bg-dark border-secondary text-light" name="last_name" value="{{ user.last_name }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Email</label>
+                            <input type="email" class="form-control bg-dark border-secondary text-light" value="{{ user.email }}" disabled>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Phone</label>
+                            <input type="tel" class="form-control bg-dark border-secondary text-light" name="phone">
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Password -->
+        <div class="card bg-dark border-0">
+            <div class="card-header bg-transparent border-0">
+                <h5 class="text-light mb-0">Change Password</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{% url 'password_reset' %}">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Current Password</label>
+                            <input type="password" class="form-control bg-dark border-secondary text-light" name="current_password">
+                        </div>
+                        <div class="col-md-6"></div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">New Password</label>
+                            <input type="password" class="form-control bg-dark border-secondary text-light" name="new_password">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Confirm Password</label>
+                            <input type="password" class="form-control bg-dark border-secondary text-light" name="confirm_password">
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-outline-light">Update Password</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Avatar -->
+        <div class="card bg-dark border-0 mb-4">
+            <div class="card-body text-center py-4">
+                <img src="/static/assets/img/default-avatar.png" alt="Avatar" 
+                     style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--wb-primary);" class="mb-3">
+                <h6 class="text-light">{{ user.get_full_name|default:user.email }}</h6>
+                <p class="text-muted small">Member since {{ user.date_joined|date:"M Y" }}</p>
+                <button class="btn btn-sm btn-outline-primary">Change Photo</button>
+            </div>
+        </div>
+        
+        <!-- Danger Zone -->
+        <div class="card bg-dark border border-danger">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="text-danger mb-0">Danger Zone</h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Once you delete your account, there is no going back.</p>
+                <button class="btn btn-sm btn-outline-danger">Delete Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

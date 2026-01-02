@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ seller.store_name }} - WatchBazaar PK{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                {% include 'components/seller_card.html' with seller=seller show_contact=True %}
+            </div>
+            <div class="col-lg-8">
+                <h4 class="text-light mb-4">Listings by {{ seller.store_name }}</h4>
+                {% if listings %}
+                <div class="row g-4">
+                    {% for watch in listings %}
+                    <div class="col-md-6">
+                        {% include 'components/watch_card.html' with watch=watch %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <p class="text-muted">No active listings</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

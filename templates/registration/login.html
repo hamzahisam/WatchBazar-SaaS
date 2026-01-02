@@ -1,0 +1,188 @@
+{% extends 'base_auth.html' %}
+{% load static %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="row g-0 min-vh-100">
+        <!-- Left: Login Form -->
+        <div class="col-lg-5 auth-form-section d-flex align-items-center justify-content-center p-4 p-lg-5">
+            <div class="w-100" style="max-width: 400px;">
+                <!-- Logo -->
+                <div class="text-center mb-5">
+                    <a href="{% url 'home' %}" class="text-decoration-none">
+                        <span class="text-light fs-1 fw-bold">WatchBazaar</span>
+                        <span class="text-primary fs-4 fw-bold">PK</span>
+                    </a>
+                    <p class="text-muted mt-2">Sign in to your account</p>
+                </div>
+                
+                <!-- Login Form -->
+                <form method="post" action="{% url 'login' %}" id="loginForm">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger py-2 mb-3">
+                        {% for error in form.non_field_errors %}
+                        {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                    {% endif %}
+                    
+                    <!-- Email Field -->
+                    <div class="form-floating mb-3">
+                        <input type="email" 
+                               class="form-control form-control-dark {% if form.username.errors %}is-invalid{% endif %}" 
+                               id="email" 
+                               name="username" 
+                               placeholder="Email address"
+                               value="{{ form.username.value|default:'' }}"
+                               autofocus
+                               required>
+                        <label for="email">Email address</label>
+                        {% if form.username.errors %}
+                        <div class="invalid-feedback">{{ form.username.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Password Field -->
+                    <div class="form-floating mb-3 position-relative">
+                        <input type="password" 
+                               class="form-control form-control-dark {% if form.password.errors %}is-invalid{% endif %}" 
+                               id="password" 
+                               name="password" 
+                               placeholder="Password"
+                               required>
+                        <label for="password">Password</label>
+                        <span class="password-toggle" onclick="togglePassword()">
+                            <span data-feather="eye" id="eyeIcon"></span>
+                        </span>
+                        {% if form.password.errors %}
+                        <div class="invalid-feedback">{{ form.password.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="remember" id="remember">
+                            <label class="form-check-label text-muted" for="remember">
+                                Remember me
+                            </label>
+                        </div>
+                        <a href="{% url 'password_reset' %}" class="auth-link small">Forgot Password?</a>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-wb-primary btn-lg w-100 mb-4">
+                        Sign In
+                    </button>
+                    
+                    <!-- Sign Up Link (for buyers only) -->
+                    <p class="text-center text-muted mb-3">
+                        Don't have an account? 
+                        <a href="{% url 'signup' %}" class="auth-link">Sign up</a>
+                    </p>
+                    
+                    <!-- Seller Notice -->
+                    <div class="text-center">
+                        <small class="text-muted">
+                            <span data-feather="briefcase" style="width: 14px; height: 14px;"></span>
+                            Seller? <a href="{% url 'contact' %}" class="auth-link">Contact admin</a> for account
+                        </small>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Right: Hero Section -->
+        <div class="col-lg-7 auth-hero-section d-none d-lg-flex align-items-center justify-content-center p-5">
+            <div class="text-center" style="max-width: 500px;">
+                <h1 class="display-3 text-uppercase text-light fw-bold mb-4">
+                    Welcome Back
+                </h1>
+                <p class="lead text-light opacity-75 mb-5">
+                    Access your account to manage offers, track orders, and discover premium timepieces.
+                </p>
+                
+                <!-- Benefits List -->
+                <div class="text-start mx-auto" style="max-width: 350px;">
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <span data-feather="shield"></span>
+                        </div>
+                        <div>
+                            <strong class="text-light">Verified Sellers Only</strong>
+                            <p class="text-muted small mb-0">All sellers are vetted and approved</p>
+                        </div>
+                    </div>
+                    
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <span data-feather="lock"></span>
+                        </div>
+                        <div>
+                            <strong class="text-light">Secure Offer System</strong>
+                            <p class="text-muted small mb-0">Protected negotiations & transactions</p>
+                        </div>
+                    </div>
+                    
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <span data-feather="map-pin"></span>
+                        </div>
+                        <div>
+                            <strong class="text-light">Flexible Options</strong>
+                            <p class="text-muted small mb-0">Karachi meeting or nationwide delivery</p>
+                        </div>
+                    </div>
+                    
+                    <div class="benefit-item">
+                        <div class="benefit-icon">
+                            <span data-feather="credit-card"></span>
+                        </div>
+                        <div>
+                            <strong class="text-light">Protected Payments</strong>
+                            <p class="text-muted small mb-0">Escrow system for peace of mind</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function togglePassword() {
+        const passwordInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eyeIcon');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            eyeIcon.setAttribute('data-feather', 'eye-off');
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.setAttribute('data-feather', 'eye');
+        }
+        feather.replace();
+    }
+    
+    // Auto-focus handling
+    document.getElementById('email').focus();
+    
+    // Enter key submission
+    document.getElementById('loginForm').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            this.submit();
+        }
+    });
+</script>
+{% endblock %}

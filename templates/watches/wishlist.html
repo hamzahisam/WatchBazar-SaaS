@@ -1,0 +1,20 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Wishlist - WatchBazaar PK{% endblock %}
+
+{% block dashboard_title %}My Wishlist{% endblock %}
+
+{% block dashboard_content %}
+{% if wishlist_items %}
+<div class="row g-4">
+    {% for item in wishlist_items %}
+    <div class="col-md-6 col-lg-4">
+        {% include 'components/watch_card.html' with watch=item.watch %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+{% include 'components/empty_state.html' with icon='heart' title='Wishlist Empty' message='Save watches you love to your wishlist.' action_url='/watches/' action_text='Browse Watches' %}
+{% endif %}
+{% endblock %}

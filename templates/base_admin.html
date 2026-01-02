@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .admin-sidebar {
+        background-color: #0d1117;
+        min-height: calc(100vh - 80px);
+        position: sticky;
+        top: 80px;
+        width: 260px;
+    }
+    
+    .admin-nav .nav-section {
+        padding: 15px 20px 5px;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #666;
+    }
+    
+    .admin-nav .nav-link {
+        color: #8b949e;
+        padding: 10px 20px;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+    }
+    
+    .admin-nav .nav-link:hover {
+        color: #fff;
+        background-color: rgba(255,255,255,0.05);
+    }
+    
+    .admin-nav .nav-link.active {
+        color: var(--wb-primary);
+        background-color: rgba(198, 169, 97, 0.1);
+        border-right: 3px solid var(--wb-primary);
+    }
+    
+    .admin-nav .nav-link svg {
+        margin-right: 12px;
+        width: 16px;
+        height: 16px;
+    }
+    
+    .admin-nav .nav-link .badge {
+        margin-left: auto;
+    }
+    
+    .admin-content {
+        padding: 30px;
+        background-color: #0a0a0a;
+        min-height: calc(100vh - 80px);
+    }
+    
+    .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    
+    .admin-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    
+    .admin-card {
+        background-color: #1a1a1a;
+        border-radius: 12px;
+        border: 1px solid #2d2d2d;
+    }
+    
+    .admin-card-header {
+        padding: 20px;
+        border-bottom: 1px solid #2d2d2d;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .admin-card-body {
+        padding: 20px;
+    }
+    
+    .admin-table {
+        color: #fff;
+    }
+    
+    .admin-table thead th {
+        background-color: #0d1117;
+        border-bottom: 2px solid var(--wb-primary);
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+        padding: 15px;
+    }
+    
+    .admin-table tbody td {
+        padding: 15px;
+        border-bottom: 1px solid #2d2d2d;
+        vertical-align: middle;
+    }
+    
+    .admin-table tbody tr:hover {
+        background-color: rgba(255,255,255,0.02);
+    }
+    
+    .kpi-card {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        border-radius: 12px;
+        padding: 25px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: radial-gradient(circle, rgba(198,169,97,0.1) 0%, transparent 70%);
+    }
+    
+    .kpi-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #fff;
+    }
+    
+    .kpi-label {
+        color: #8b949e;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        margin-top: 5px;
+    }
+    
+    .kpi-change {
+        font-size: 0.8rem;
+        margin-top: 10px;
+    }
+    
+    .kpi-change.positive { color: #28a745; }
+    .kpi-change.negative { color: #dc3545; }
+    
+    .alert-item {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        background-color: rgba(255,255,255,0.03);
+    }
+    
+    .alert-item.urgent {
+        border-left: 3px solid #dc3545;
+    }
+    
+    .alert-item.warning {
+        border-left: 3px solid #ffc107;
+    }
+    
+    .alert-item.info {
+        border-left: 3px solid #17a2b8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex">
+    <!-- Admin Sidebar -->
+    <div class="admin-sidebar flex-shrink-0">
+        <nav class="admin-nav py-3">
+            <div class="nav-section">Main</div>
+            <a href="{% url 'admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                <span data-feather="home"></span> Dashboard
+            </a>
+            
+            <div class="nav-section">User Management</div>
+            <a href="{% url 'admin_buyers' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_buyers' %}active{% endif %}">
+                <span data-feather="users"></span> Buyers
+            </a>
+            <a href="{% url 'admin_sellers' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_sellers' %}active{% endif %}">
+                <span data-feather="briefcase"></span> Sellers
+            </a>
+            <a href="{% url 'seller_onboarding' %}" class="nav-link {% if request.resolver_match.url_name == 'seller_onboarding' %}active{% endif %}">
+                <span data-feather="user-plus"></span> Add Seller
+            </a>
+            
+            <div class="nav-section">Listings</div>
+            <a href="{% url 'admin_pending_listings' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_pending_listings' %}active{% endif %}">
+                <span data-feather="clock"></span> Pending Approval
+                {% if pending_listings_count %}
+                <span class="badge bg-danger">{{ pending_listings_count }}</span>
+                {% endif %}
+            </a>
+            <a href="{% url 'admin_all_listings' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_all_listings' %}active{% endif %}">
+                <span data-feather="watch"></span> All Listings
+            </a>
+            <a href="{% url 'admin_flagged_listings' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_flagged_listings' %}active{% endif %}">
+                <span data-feather="flag"></span> Flagged
+                {% if flagged_count %}
+                <span class="badge bg-warning text-dark">{{ flagged_count }}</span>
+                {% endif %}
+            </a>
+            
+            <div class="nav-section">Transactions</div>
+            <a href="{% url 'admin_offers' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_offers' %}active{% endif %}">
+                <span data-feather="tag"></span> Offers
+            </a>
+            <a href="{% url 'admin_orders' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_orders' %}active{% endif %}">
+                <span data-feather="shopping-bag"></span> Orders
+            </a>
+            <a href="{% url 'admin_deliveries' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_deliveries' %}active{% endif %}">
+                <span data-feather="truck"></span> Deliveries
+            </a>
+            
+            <div class="nav-section">Reports</div>
+            <a href="{% url 'admin_analytics' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_analytics' %}active{% endif %}">
+                <span data-feather="bar-chart-2"></span> Analytics
+            </a>
+            <a href="{% url 'admin_support' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_support' %}active{% endif %}">
+                <span data-feather="help-circle"></span> Support Tickets
+                {% if open_tickets_count %}
+                <span class="badge bg-info">{{ open_tickets_count }}</span>
+                {% endif %}
+            </a>
+            
+            <div class="nav-section">Settings</div>
+            <a href="{% url 'admin_settings' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_settings' %}active{% endif %}">
+                <span data-feather="settings"></span> Platform Settings
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="admin-content flex-grow-1">
+        {% block admin_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% block admin_js %}{% endblock %}
+{% endblock %}

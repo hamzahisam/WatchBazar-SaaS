@@ -1,0 +1,433 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}My Offers - WatchBazaar PK{% endblock %}
+
+{% block dashboard_title %}My Offers{% endblock %}
+
+{% block dashboard_content %}
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-info bg-opacity-10">
+                <span data-feather="send" class="text-info"></span>
+            </div>
+            <div>
+                <p class="stat-label">Total Sent</p>
+                <h3 class="stat-value">{{ total_count }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-warning bg-opacity-10">
+                <span data-feather="clock" class="text-warning"></span>
+            </div>
+            <div>
+                <p class="stat-label">Pending</p>
+                <h3 class="stat-value">{{ pending_count }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-success bg-opacity-10">
+                <span data-feather="check-circle" class="text-success"></span>
+            </div>
+            <div>
+                <p class="stat-label">Accepted</p>
+                <h3 class="stat-value">{{ accepted_count }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-primary bg-opacity-10">
+                <span data-feather="message-circle" class="text-primary"></span>
+            </div>
+            <div>
+                <p class="stat-label">Counter Offers</p>
+                <h3 class="stat-value">{{ counter_count }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs border-0 mb-4" role="tablist">
+    <li class="nav-item">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#activeOffers">
+            Active <span class="badge bg-warning text-dark ms-1">{{ active_offers.count }}</span>
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#counterOffers">
+            Counter Offers <span class="badge bg-primary ms-1">{{ counter_offers.count }}</span>
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#historyOffers">
+            History
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <!-- Active Offers Tab -->
+    <div class="tab-pane fade show active" id="activeOffers">
+        {% if active_offers %}
+        {% for offer in active_offers %}
+        <div class="card bg-dark border-0 mb-3 offer-card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <!-- Watch Info -->
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                            <img src="{{ offer.watch.primary_image.url }}" alt="{{ offer.watch.model }}" 
+                                 class="rounded me-3" style="width:80px;height:80px;object-fit:cover;">
+                            <div>
+                                <p class="text-primary mb-1 small">{{ offer.watch.brand }}</p>
+                                <a href="{% url 'watch_detail' offer.watch.id %}" class="text-light text-decoration-none h6">
+                                    {{ offer.watch.model }}
+                                </a>
+                                <p class="text-muted small mb-0 mt-1">
+                                    <span data-feather="user" style="width:12px;height:12px;"></span>
+                                    {{ offer.watch.seller.store_name }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Your Offer -->
+                    <div class="col-md-2 mt-3 mt-md-0">
+                        <p class="text-muted small mb-1">Your Offer</p>
+                        <h5 class="text-primary mb-0">Rs. {{ offer.amount|floatformat:0|intcomma }}</h5>
+                    </div>
+                    
+                    <!-- Asking Price -->
+                    <div class="col-md-2 mt-3 mt-md-0">
+                        <p class="text-muted small mb-1">Asking Price</p>
+                        <p class="text-light mb-0">Rs. {{ offer.watch.price|floatformat:0|intcomma }}</p>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div class="col-md-2 mt-3 mt-md-0">
+                        <span class="badge bg-warning text-dark">
+                            <span data-feather="clock" style="width:12px;height:12px;"></span> Pending
+                        </span>
+                        <p class="text-muted small mb-0 mt-1">{{ offer.created_at|timesince }} ago</p>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="col-md-2 mt-3 mt-md-0 text-md-end">
+                        <button class="btn btn-outline-primary btn-sm" onclick="editOffer({{ offer.id }}, {{ offer.amount }})">
+                            <span data-feather="edit-2" style="width:14px;height:14px;"></span> Edit
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="withdrawOffer({{ offer.id }})">
+                            <span data-feather="x" style="width:14px;height:14px;"></span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Expiry Warning -->
+                {% if offer.expires_soon %}
+                <div class="alert alert-warning border-0 mt-3 mb-0" style="background-color:rgba(255,193,7,0.1);">
+                    <span data-feather="alert-triangle" style="width:14px;height:14px;"></span>
+                    <small class="text-warning">This offer expires in {{ offer.time_remaining }}</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <span data-feather="send" style="width:60px;height:60px;color:#444;"></span>
+            </div>
+            <h5 class="text-light mb-2">No Active Offers</h5>
+            <p class="text-muted mb-4">You haven't made any offers yet.</p>
+            <a href="{% url 'watch_list' %}" class="btn btn-primary">
+                <span data-feather="search" style="width:16px;height:16px;"></span> Browse Watches
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Counter Offers Tab -->
+    <div class="tab-pane fade" id="counterOffers">
+        {% if counter_offers %}
+        {% for offer in counter_offers %}
+        <div class="card bg-dark border-0 mb-3">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <!-- Watch Info -->
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                            <img src="{{ offer.watch.primary_image.url }}" alt="{{ offer.watch.model }}" 
+                                 class="rounded me-3" style="width:80px;height:80px;object-fit:cover;">
+                            <div>
+                                <p class="text-primary mb-1 small">{{ offer.watch.brand }}</p>
+                                <a href="{% url 'watch_detail' offer.watch.id %}" class="text-light text-decoration-none h6">
+                                    {{ offer.watch.model }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Offer Comparison -->
+                    <div class="col-md-4 mt-3 mt-md-0">
+                        <div class="d-flex align-items-center">
+                            <div class="text-center me-3">
+                                <p class="text-muted small mb-1">Your Offer</p>
+                                <p class="text-light mb-0">Rs. {{ offer.amount|floatformat:0|intcomma }}</p>
+                            </div>
+                            <span data-feather="arrow-right" class="text-muted mx-2" style="width:20px;height:20px;"></span>
+                            <div class="text-center ms-3">
+                                <p class="text-muted small mb-1">Counter Offer</p>
+                                <h5 class="text-primary mb-0">Rs. {{ offer.counter_amount|floatformat:0|intcomma }}</h5>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Seller Message -->
+                    <div class="col-md-2 mt-3 mt-md-0">
+                        {% if offer.counter_message %}
+                        <p class="text-muted small mb-1">Seller says:</p>
+                        <p class="text-light small mb-0">"{{ offer.counter_message|truncatechars:50 }}"</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="col-md-2 mt-3 mt-md-0 text-md-end">
+                        <button class="btn btn-success btn-sm mb-1" onclick="acceptCounter({{ offer.id }})">
+                            <span data-feather="check" style="width:14px;height:14px;"></span> Accept
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm mb-1" onclick="negotiateFurther({{ offer.id }}, {{ offer.counter_amount }})">
+                            Counter
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="declineCounter({{ offer.id }})">
+                            <span data-feather="x" style="width:14px;height:14px;"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <span data-feather="message-circle" style="width:60px;height:60px;color:#444;"></span>
+            </div>
+            <h5 class="text-light mb-2">No Counter Offers</h5>
+            <p class="text-muted">No sellers have countered your offers yet.</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- History Tab -->
+    <div class="tab-pane fade" id="historyOffers">
+        {% if history_offers %}
+        <table class="table table-dark">
+            <thead>
+                <tr>
+                    <th>Watch</th>
+                    <th>Your Offer</th>
+                    <th>Outcome</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for offer in history_offers %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <img src="{{ offer.watch.primary_image.url }}" alt="{{ offer.watch.model }}" 
+                                 class="rounded me-2" style="width:40px;height:40px;object-fit:cover;">
+                            <div>
+                                <span class="text-light">{{ offer.watch.brand }} {{ offer.watch.model }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-primary">Rs. {{ offer.amount|floatformat:0|intcomma }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if offer.status == 'accepted' %}bg-success
+                            {% elif offer.status == 'declined' %}bg-danger
+                            {% elif offer.status == 'withdrawn' %}bg-secondary
+                            {% elif offer.status == 'expired' %}bg-secondary
+                            {% endif %}">
+                            {{ offer.status|title }}
+                        </span>
+                    </td>
+                    <td class="text-muted">{{ offer.updated_at|date:"M d, Y" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <span data-feather="archive" style="width:60px;height:60px;color:#444;"></span>
+            </div>
+            <h5 class="text-light mb-2">No History</h5>
+            <p class="text-muted">Your past offers will appear here.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Edit Offer Modal -->
+<div class="modal fade" id="editOfferModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border-0">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-light">Edit Offer</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editOfferForm">
+                    <input type="hidden" name="offer_id" id="editOfferId">
+                    
+                    <div class="mb-4">
+                        <label class="form-label text-muted">New Offer Amount</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-black border-secondary text-primary">Rs.</span>
+                            <input type="number" class="form-control bg-dark border-secondary text-light" 
+                                   id="editOfferAmount" name="amount" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitEditOffer()">
+                    Update Offer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function editOffer(offerId, currentAmount) {
+        document.getElementById('editOfferId').value = offerId;
+        document.getElementById('editOfferAmount').value = currentAmount;
+        new bootstrap.Modal(document.getElementById('editOfferModal')).show();
+    }
+    
+    function submitEditOffer() {
+        const offerId = document.getElementById('editOfferId').value;
+        const amount = document.getElementById('editOfferAmount').value;
+        
+        fetch(`/offers/${offerId}/update/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ amount })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Failed to update offer');
+            }
+        });
+    }
+    
+    function withdrawOffer(offerId) {
+        if (!confirm('Are you sure you want to withdraw this offer?')) {
+            return;
+        }
+        
+        fetch(`/offers/${offerId}/withdraw/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Failed to withdraw offer');
+            }
+        });
+    }
+    
+    function acceptCounter(offerId) {
+        if (!confirm('Accept this counter offer? This will proceed to checkout.')) {
+            return;
+        }
+        
+        fetch(`/offers/${offerId}/accept-counter/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.redirect || '/checkout/';
+            } else {
+                alert(data.message || 'Failed to accept counter offer');
+            }
+        });
+    }
+    
+    function declineCounter(offerId) {
+        if (!confirm('Decline this counter offer?')) {
+            return;
+        }
+        
+        fetch(`/offers/${offerId}/decline-counter/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Failed to decline counter offer');
+            }
+        });
+    }
+    
+    function negotiateFurther(offerId, counterAmount) {
+        const newOffer = prompt(`Seller's counter: Rs. ${counterAmount.toLocaleString()}\nEnter your new offer:`);
+        
+        if (newOffer && !isNaN(newOffer)) {
+            fetch(`/offers/${offerId}/update/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ amount: parseInt(newOffer) })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message || 'Failed to update offer');
+                }
+            });
+        }
+    }
+</script>
+{% endblock %}
