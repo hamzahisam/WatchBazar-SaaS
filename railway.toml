@@ -1,0 +1,36 @@
+# ======================================================================================
+# Railway.toml - Railway Deployment Configuration
+# ======================================================================================
+# This file tells Railway how to build and deploy your app.
+#
+# WHAT IS RAILWAY?
+# Railway is a cloud platform that makes deploying apps easy.
+# Website: https://railway.app
+#
+# HOW TO DEPLOY:
+# 1. Push your code to GitHub
+# 2. Go to railway.app and create a new project
+# 3. Connect your GitHub repository
+# 4. Railway will automatically detect this file and deploy!
+#
+# SETTING ENVIRONMENT VARIABLES:
+# In Railway dashboard, go to your project > Variables tab, and add:
+# - DJANGO_SECRET_KEY (copy from your .env file)
+# - DJANGO_DEBUG=0 (for production)
+# - DATABASE_URL (if using Railway's PostgreSQL add-on, this is auto-set)
+# ======================================================================================
+
+[build]
+# Use Dockerfile to build the app
+builder = "DOCKERFILE"
+dockerfilePath = "./Dockerfile"
+
+# Only rebuild when these files change (saves build time)
+watchPatterns = [
+    "requirements.txt",
+    "**/*.py",
+    "templates/**",
+    "static/**",
+    "railway.toml",
+    "Dockerfile",
+]

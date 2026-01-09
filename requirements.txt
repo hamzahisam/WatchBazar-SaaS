@@ -1,0 +1,30 @@
+# WatchBazar Requirements
+# ========================
+# Core framework
+django>=5.2
+
+# Environment & Configuration
+# ---------------------------
+# python-decouple: Reads settings from .env file
+# Docs: https://github.com/HBNetwork/python-decouple
+python-decouple>=3.8
+
+# dj-database-url: Parse database URLs (for easy PostgreSQL switch later)
+# Docs: https://github.com/jazzband/dj-database-url
+dj-database-url>=2.1
+
+# Production Server
+# -----------------
+# whitenoise: Serve static files efficiently in production
+# Docs: https://whitenoise.readthedocs.io/
+whitenoise>=6.6
+
+# gunicorn: Production-grade WSGI server (used in Dockerfile)
+# Docs: https://gunicorn.org/
+gunicorn>=21.2
+
+# Database Drivers (for future PostgreSQL support)
+# ------------------------------------------------
+# psycopg2-binary: PostgreSQL adapter
+# Note: Currently using SQLite, but this is ready for when you switch
+psycopg2-binary>=2.9
