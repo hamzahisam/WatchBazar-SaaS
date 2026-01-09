@@ -51,6 +51,14 @@ RUN pip install -r /tmp/requirements.txt
 # Copy your Django project code
 COPY . /code
 
+# Build-time environment variables
+# These are only used for collectstatic during build
+# Railway will set the real values at runtime
+ARG DJANGO_SECRET_KEY="build-time-secret-key-not-for-production"
+ARG DJANGO_DEBUG=0
+ENV DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+ENV DJANGO_DEBUG=${DJANGO_DEBUG}
+
 # Collect static files (CSS, JS, images) for production
 # Note: This runs at build time, not runtime
 RUN python manage.py collectstatic --noinput
@@ -60,11 +68,11 @@ RUN python manage.py collectstatic --noinput
 # 1. Runs database migrations
 # 2. Starts the production server (gunicorn)
 RUN printf '#!/bin/bash\n\
-RUN_PORT="${PORT:-8000}"\n\
-echo "Running migrations..."\n\
-python manage.py migrate --no-input\n\
-echo "Starting server on port $RUN_PORT..."\n\
-gunicorn config.wsgi:application --bind "0.0.0.0:$RUN_PORT"\n' > ./start.sh
+    RUN_PORT="${PORT:-8000}"\n\
+    echo "Running migrations..."\n\
+    python manage.py migrate --no-input\n\
+    echo "Starting server on port $RUN_PORT..."\n\
+    gunicorn config.wsgi:application --bind "0.0.0.0:$RUN_PORT"\n' > ./start.sh
 
 # Make the script executable
 RUN chmod +x start.sh
